@@ -1,0 +1,14 @@
+asgiref==3.9.1
+Django==4.2.7
+django-extensions==3.2.3
+Pillow==10.0.1
+pypng==0.20220715.0
+python-decouple==3.8
+qrcode==7.4.2
+sqlparse==0.5.3
+typing_extensions==4.15.0
+dj-database-url==2.1.0
+
+# Optional database drivers (uncomment as needed)
+# psycopg2-binary==2.9.7  # For PostgreSQL
+# mysqlclient==2.2.0      # For MySQL

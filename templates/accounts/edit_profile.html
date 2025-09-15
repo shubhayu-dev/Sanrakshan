@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - Sanrakshan{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-pencil"></i>
+                        Edit Profile
+                    </h4>
+                    <p class="mb-0 small">Update your account and student information</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="post" id="profileForm" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Personal Information Section -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="text-primary mb-3 border-bottom pb-2">
+                                    <i class="bi bi-person"></i>
+                                    Personal Information
+                                </h6>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                    First Name <span class="text-danger">*</span>
+                                </label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.first_name.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                    Last Name <span class="text-danger">*</span>
+                                </label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.last_name.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                Email Address <span class="text-danger">*</span>
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.email.errors }}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                This will be your login email address
+                            </div>
+                        </div>
+                        
+                        <!-- Student Information Section -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="text-primary mb-3 border-bottom pb-2 mt-4">
+                                    <i class="bi bi-mortarboard"></i>
+                                    Student Information
+                                </h6>
+                            </div>
+                        </div>
+                        
+                        <!-- Read-only fields -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Roll Number</label>
+                                <div class="form-control bg-light" readonly>
+                                    {{ object.roll_number }}
+                                </div>
+                                <div class="form-text">
+                                    <i class="bi bi-lock"></i>
+                                    Roll number cannot be changed. Contact admin if incorrect.
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Department</label>
+                                <div class="form-control bg-light" readonly>
+                                    {{ object.get_department_display }}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Academic Year</label>
+                                <div class="form-control bg-light" readonly>
+                                    {{ object.get_year_display }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Editable contact information -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.phone_number.id_for_label }}" class="form-label">
+                                    <i class="bi bi-telephone"></i>
+                                    Phone Number
+                                </label>
+                                {{ form.phone_number }}
+                                {% if form.phone_number.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.phone_number.errors }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Your mobile number for important updates</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.emergency_contact.id_for_label }}" class="form-label">
+                                    <i class="bi bi-person-exclamation"></i>
+                                    Emergency Contact
+                                </label>
+                                {{ form.emergency_contact }}
+                                {% if form.emergency_contact.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.emergency_contact.errors }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Parent/Guardian contact number</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.hostel_room.id_for_label }}" class="form-label">
+                                <i class="bi bi-house"></i>
+                                Accommodation Details
+                            </label>
+                            {{ form.hostel_room }}
+                            {% if form.hostel_room.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.hostel_room.errors }}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Hostel room number or "Day Scholar"</div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-arrow-left"></i>
+                                    Cancel
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary w-100" id="updateBtn">
+                                    <i class="bi bi-check-circle"></i>
+                                    Update Profile
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Account Security Section -->
+            <div class="card mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">
+                        <i class="bi bi-shield-exclamation"></i>
+                        Account Security
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6>Change Password</h6>
+                            <p class="text-muted mb-0">
+                                Keep your account secure by using a strong password and changing it regularly.
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <a href="{% url 'accounts:password_change' %}" class="btn btn-warning">
+                                <i class="bi bi-key"></i>
+                                Change Password
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('profileForm');
+    const updateBtn = document.getElementById('updateBtn');
+    
+    // Form validation
+    const requiredFields = ['id_first_name', 'id_last_name', 'id_email'];
+    
+    requiredFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        field.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    });
+    
+    // Email validation
+    const emailField = document.getElementById('id_email');
+    emailField.addEventListener('blur', function() {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(this.value)) {
+            this.classList.add('is-invalid');
+        } else {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+    
+    // Phone validation
+    const phoneField = document.getElementById('id_phone_number');
+    if (phoneField) {
+        phoneField.addEventListener('input', function() {
+            // Format phone number as user types
+            let value = this.value.replace(/\D/g, '');
+            if (value.length >= 10) {
+                if (value.startsWith('91')) {
+                    value = '+91 ' + value.slice(2, 7) + ' ' + value.slice(7);
+                } else {
+                    value = '+91 ' + value.slice(0, 5) + ' ' + value.slice(5, 10);
+                }
+            }
+            this.value = value;
+        });
+    }
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        requiredFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            }
+        });
+        
+        if (isValid) {
+            showLoading(updateBtn);
+        } else {
+            e.preventDefault();
+            // Scroll to first invalid field
+            const firstInvalid = document.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalid.focus();
+            }
+        }
+    });
+    
+    // Auto-save indication (optional enhancement)
+    let changesMade = false;
+    const formInputs = form.querySelectorAll('input, select, textarea');
+    
+    formInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (!changesMade) {
+                changesMade = true;
+                updateBtn.innerHTML = '<i class="bi bi-exclamation-circle"></i> Save Changes';
+                updateBtn.classList.remove('btn-primary');
+                updateBtn.classList.add('btn-warning');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

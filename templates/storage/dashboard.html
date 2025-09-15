@@ -1,0 +1,431 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Sanrakshan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-left: 4px solid transparent;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 25px rgba(0,0,0,0.15);
+    }
+    
+    .stat-card.primary {
+        border-left-color: var(--primary-color);
+    }
+    
+    .stat-card.success {
+        border-left-color: var(--accent-color);
+    }
+    
+    .stat-card.warning {
+        border-left-color: var(--warning-color);
+    }
+    
+    .stat-card.info {
+        border-left-color: #17a2b8;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-weight: 500;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .quick-action {
+        background: white;
+        border: 2px dashed #e9ecef;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    
+    .quick-action:hover {
+        border-color: var(--primary-color);
+        background: linear-gradient(135deg, #f8f9ff, #ffffff);
+        color: var(--primary-color);
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+    
+    .quick-action i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.7;
+    }
+    
+    .quick-action:hover i {
+        opacity: 1;
+    }
+    
+    .timeline-item {
+        border-left: 2px solid #e9ecef;
+        padding-left: 1rem;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -6px;
+        top: 0.75rem;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--primary-color);
+    }
+    
+    .timeline-item.claimed::before {
+        background: var(--accent-color);
+    }
+    
+    .timeline-item.cancelled::before {
+        background: var(--danger-color);
+    }
+    
+    .storage-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.25rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 1rem;
+        border: 1px solid #e9ecef;
+    }
+    
+    .storage-card:hover {
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-active {
+        background: #fef3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .status-claimed {
+        background: #d1e7dd;
+        color: #0a3622;
+        border: 1px solid #86cfda;
+    }
+    
+    .welcome-banner {
+        background: linear-gradient(135deg, var(--primary-color), #3a6db0);
+        color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .item-count {
+        background: var(--accent-color);
+        color: white;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+    
+    .dashboard-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    }
+    
+    .section-title {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #f1f3f4;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="bi bi-speedometer2"></i>
+                    Welcome back, {{ profile.user.get_full_name|default:user.get_full_name }}!
+                </h1>
+                <p class="mb-0 opacity-90">
+                    {% if profile %}
+                        {{ profile.roll_number }} • {{ profile.get_department_display }} • Year {{ profile.year }}
+                    {% else %}
+                        {{ user.email }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex flex-column align-items-md-end">
+                    <small class="opacity-75">Last login</small>
+                    <strong>{{ user.last_login|date:"M d, Y g:i A"|default:"First time!" }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card primary">
+                <div class="stat-number">{{ stats.total_sessions|default:0 }}</div>
+                <div class="stat-label">Total Sessions</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card warning">
+                <div class="stat-number">{{ stats.active_sessions|default:0 }}</div>
+                <div class="stat-label">Active Storage</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card success">
+                <div class="stat-number">{{ stats.claimed_sessions|default:0 }}</div>
+                <div class="stat-label">Items Claimed</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card info">
+                <div class="stat-number">{{ stats.total_items|default:0 }}</div>
+                <div class="stat-label">Total Items</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Quick Actions -->
+            <div class="dashboard-section">
+                <h3 class="section-title">
+                    <i class="bi bi-lightning"></i>
+                    Quick Actions
+                </h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <a href="{% url 'storage:keep_stuff' %}" class="quick-action">
+                            <i class="bi bi-plus-circle text-primary"></i>
+                            <h5 class="mb-1">Store Items</h5>
+                            <p class="mb-0 small text-muted">Add new items to storage</p>
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <a href="{% url 'storage:claim_stuff' %}" class="quick-action">
+                            <i class="bi bi-box-arrow-down text-success"></i>
+                            <h5 class="mb-1">Claim Items</h5>
+                            <p class="mb-0 small text-muted">Retrieve your stored items</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Storage -->
+            {% if has_active_storage %}
+            <div class="dashboard-section">
+                <h3 class="section-title">
+                    <i class="bi bi-box-seam"></i>
+                    Active Storage
+                    <span class="badge bg-warning ms-2">{{ active_storage|length }}</span>
+                </h3>
+                
+                {% for entry in active_storage %}
+                <div class="storage-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1">
+                                <i class="bi bi-calendar3"></i>
+                                {{ entry.created_at|date:"M d, Y" }}
+                            </h6>
+                            <small class="text-muted">{{ entry.days_in_storage }} day{{ entry.days_in_storage|pluralize }} in storage</small>
+                        </div>
+                        <span class="status-badge status-active">Active</span>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <span class="item-count">{{ entry.get_total_items }} item{{ entry.get_total_items|pluralize }}</span>
+                        <span class="ms-2 small text-muted">
+                            {{ entry.get_unique_items }} unique type{{ entry.get_unique_items|pluralize }}
+                        </span>
+                    </div>
+                    
+                    {% if entry.description %}
+                    <p class="text-muted small mb-2">{{ entry.description|truncatewords:15 }}</p>
+                    {% endif %}
+                    
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'qr_codes:display' entry.entry_id %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-qr-code"></i> View QR Code
+                        </a>
+                        <a href="{% url 'storage:claim_stuff' %}" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-box-arrow-down"></i> Claim Items
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Profile Summary -->
+            <div class="dashboard-section">
+                <h4 class="section-title">
+                    <i class="bi bi-person-circle"></i>
+                    Profile Summary
+                </h4>
+                <div class="mb-3">
+                    <strong>{{ profile.user.get_full_name|default:user.get_full_name }}</strong><br>
+                    <small class="text-muted">{{ user.email }}</small>
+                </div>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <div class="fw-bold text-primary">{{ stats.active_items|default:0 }}</div>
+                            <small class="text-muted">Items in Storage</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="fw-bold text-success">{{ stats.claimed_sessions|default:0 }}</div>
+                        <small class="text-muted">Times Claimed</small>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'accounts:profile' %}" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-person-gear"></i> Manage Profile
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="dashboard-section">
+                <h4 class="section-title">
+                    <i class="bi bi-clock-history"></i>
+                    Recent Activity
+                </h4>
+                
+                {% if recent_entries %}
+                    <div class="timeline">
+                        {% for entry in recent_entries %}
+                        <div class="timeline-item {{ entry.status }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong class="d-block">
+                                        {% if entry.status == 'active' %}
+                                            <i class="bi bi-box-seam text-warning"></i> Items Stored
+                                        {% elif entry.status == 'claimed' %}
+                                            <i class="bi bi-check-circle text-success"></i> Items Claimed
+                                        {% elif entry.status == 'cancelled' %}
+                                            <i class="bi bi-x-circle text-danger"></i> Storage Cancelled
+                                        {% endif %}
+                                    </strong>
+                                    <small class="text-muted">
+                                        {{ entry.get_total_items }} item{{ entry.get_total_items|pluralize }}
+                                        • {{ entry.created_at|timesince }} ago
+                                    </small>
+                                </div>
+                                {% if entry.status == 'active' %}
+                                <a href="{% url 'qr_codes:display' entry.entry_id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-qr-code"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <p class="mb-0">No activity yet</p>
+                        <small class="text-muted">Start by storing some items!</small>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Help & Support -->
+            <div class="dashboard-section">
+                <h5 class="section-title">
+                    <i class="bi bi-question-circle"></i>
+                    Need Help?
+                </h5>
+                <div class="d-grid gap-2">
+                    <a href="#" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-book"></i> Storage Guidelines
+                    </a>
+                    <a href="#" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-telephone"></i> Contact Support
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Empty State for New Users -->
+{% if not stats.total_sessions %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="empty-state" style="min-height: 300px; display: flex; align-items: center; flex-direction: column; justify-content: center;">
+                <i class="bi bi-box-seam"></i>
+                <h4>Welcome to Storage System!</h4>
+                <p class="text-muted">You haven't stored any items yet. Get started by adding your first storage entry.</p>
+                <a href="{% url 'storage:keep_stuff' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle"></i> Store Your First Items
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Claim Your Items{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-box-arrow-in-down"></i>
+                        Claim Your Items
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% csrf_token %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if storage_sessions %}
+                        <div class="list-group">
+                            {% for session in storage_sessions %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h5 class="mb-2">
+                                                <i class="bi bi-box-seam"></i>
+                                                Storage Entry - {{ session.get_total_items }} item(s)
+                                            </h5>
+                                            <p class="mb-1 text-muted">
+                                                <small>
+                                                    <i class="bi bi-calendar-event"></i> Stored on: {{ session.created_at|date:"M d, Y g:i A" }}
+                                                </small>
+                                            </p>
+                                            <p class="mb-2">
+                                                <span class="badge bg-{% if session.status == 'active' %}primary{% elif session.status == 'claimed' %}success{% else %}secondary{% endif %}">
+                                                    {{ session.get_status_display }}
+                                                </span>
+                                            </p>
+                                            
+                                            <!-- Items List -->
+                                            <div class="mb-2">
+                                                <small class="text-muted">Items:</small>
+                                                <div class="mt-1">
+                                                    {% for item in session.items.all %}
+                                                        <span class="badge bg-light text-dark me-1">
+                                                            {{ item.item_name }}{% if item.quantity > 1 %} (x{{ item.quantity }}){% endif %}
+                                                        </span>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="ms-3">
+                                            {% if session.status == 'active' %}
+                                                <button type="button" class="btn btn-success btn-sm claim-btn" 
+                                                        data-entry-id="{{ session.entry_id }}"
+                                                        onclick="claimItems('{{ session.entry_id }}')">
+                                                    <i class="bi bi-box-arrow-in-down"></i> Claim Items
+                                                </button>
+                                            {% elif session.status == 'claimed' %}
+                                                <span class="text-success">
+                                                    <i class="bi bi-check-circle"></i> Claimed
+                                                    <br><small>{{ session.claimed_at|date:"M d, Y" }}</small>
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-inbox h1 text-muted"></i>
+                            <p class="text-muted mt-2">You don't have any items to claim.</p>
+                            <a href="{% url 'storage:keep_stuff' %}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Store New Items
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function claimItems(entryId) {
+    if (!confirm('Are you sure you want to claim these items? This action cannot be undone.')) {
+        return;
+    }
+    
+    const button = document.querySelector(`[data-entry-id="${entryId}"]`);
+    const originalText = button.innerHTML;
+    
+    // Show loading state
+    button.disabled = true;
+    button.innerHTML = '<i class="bi bi-hourglass-split"></i> Claiming...';
+    
+    // Make AJAX request
+    fetch(`/storage/api/claim/${entryId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            button.innerHTML = '<i class="bi bi-check-circle"></i> Claimed!';
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-success');
+            
+            // Reload page after short delay to show updated status
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            // Show error
+            alert('Error: ' + data.message);
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while claiming items. Please try again.');
+        button.disabled = false;
+        button.innerHTML = originalText;
+    });
+}
+</script>
+{% endblock %}

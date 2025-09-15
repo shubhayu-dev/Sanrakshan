@@ -1,0 +1,154 @@
+# Django Project .gitignore
+
+# Database files
+*.sqlite3
+*.db
+db.sqlite3
+
+# Environment variables and secrets
+.env
+.env.local
+.env.production
+.env.staging
+*.env
+
+# Django secret key and settings
+local_settings.py
+settings_local.py
+production_settings.py
+
+# Media files (user uploads, QR codes)
+media/
+/media/
+media/qr_codes/
+media/uploads/
+
+# Static files (collected)
+staticfiles/
+/staticfiles/
+static_root/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+django.log
+debug.log
+error.log
+
+# Backup files
+*.bak
+*.backup
+*.sql
+*.dump
+
+# Test files
+.coverage
+.pytest_cache/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Security and private keys
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Local configuration
+config.ini
+config.json
+local_config.py
+
+# Migration files (optional - uncomment if you want to ignore migrations)
+# */migrations/*.py
+# !*/migrations/__init__.py
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Redis dump
+dump.rdb
+
+# Node modules (if using frontend tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Webpack
+/static/bundles/
+webpack-stats.json
+
+# Custom project files
+test_*.py
+debug_*.py
+scratch_*.py
+
+# Development documentation (not for production)
+PROJECT_OVERVIEW.md
+TECHNICAL_GUIDE.md
+IMPROVEMENT_SUGGESTIONS.md
+FUTURE_ENHANCEMENTS.md
+PRIVACY_SETUP.md
+
+# Development scripts
+create_fresh_accounts.py
+test_qr_display.py

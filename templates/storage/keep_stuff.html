@@ -1,0 +1,698 @@
+{% extends 'base.html' %}
+
+{% block title %}Store Items - Sanrakshan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .storage-wizard {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    
+    .step-indicator::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 300px;
+        height: 2px;
+        background: #e9ecef;
+        z-index: 0;
+    }
+    
+    .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin: 0 20px;
+        position: relative;
+        z-index: 1;
+        transition: all 0.3s ease;
+    }
+    
+    .step.active {
+        background: #007bff;
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .step.completed {
+        background: #28a745;
+        color: white;
+    }
+    
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .section-header {
+        border-bottom: 2px solid #f1f3f4;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        color: #007bff;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .item-form {
+        border: 2px solid #f1f3f4;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        position: relative;
+        transition: border-color 0.3s ease;
+    }
+    
+    .item-form:hover {
+        border-color: #007bff;
+    }
+    
+    .item-form.to-delete {
+        opacity: 0.5;
+        background: #fff5f5;
+        border-color: #dc3545;
+    }
+    
+    .remove-item {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: #dc3545;
+        cursor: pointer;
+        font-size: 1.25rem;
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+    }
+    
+    .remove-item:hover {
+        opacity: 1;
+    }
+    
+    .add-item-btn {
+        border: 2px dashed #007bff;
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        background: transparent;
+        color: #007bff;
+        transition: all 0.3s ease;
+        width: 100%;
+        cursor: pointer;
+    }
+    
+    .add-item-btn:hover {
+        background: #f8f9ff;
+        transform: translateY(-2px);
+    }
+    
+    .category-icon {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+    }
+    
+    .preview-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        border-left: 4px solid #28a745;
+    }
+    
+    .preview-item {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .quantity-badge {
+        background: #28a745;
+        color: white;
+        border-radius: 15px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .form-progress {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .progress-bar-custom {
+        height: 6px;
+        border-radius: 3px;
+        background: #e9ecef;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #007bff, #28a745);
+        transition: width 0.5s ease;
+        border-radius: 3px;
+    }
+    
+    .help-text {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        border-radius: 6px;
+        padding: 1rem;
+        margin: 1rem 0;
+        font-size: 0.875rem;
+    }
+    
+    .form-floating .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="storage-wizard">
+        <!-- Progress Steps -->
+        <div class="step-indicator">
+            <div class="step active">1</div>
+            <div class="step">2</div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="form-progress">
+            <div class="d-flex justify-content-between mb-2">
+                <small class="text-muted">Form Progress</small>
+                <small class="text-muted">Complete all required fields</small>
+            </div>
+            <div class="progress-bar-custom">
+                <div class="progress-fill" style="width: 10%"></div>
+            </div>
+        </div>
+
+        <form method="post" id="storageForm">
+            {% csrf_token %}
+            
+            <!-- Items Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="bi bi-box-seam"></i> Storage Items
+                    </h2>
+                    <p class="text-muted">Add the items you want to store. You can add multiple items and specify quantities.</p>
+                </div>
+
+                <div class="help-text">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Tip:</strong> Be specific with item names and descriptions to make retrieval easier later.
+                </div>
+
+                <div id="items-container">
+                    <!-- Template item form (hidden by default) -->
+                    <div class="item-form" style="display: none;">
+                        <span class="remove-item" onclick="removeItemForm(this)">
+                            <i class="bi bi-x-circle"></i>
+                        </span>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" name="form-__prefix__-item_name" id="id_form-__prefix__-item_name" placeholder="Item Name">
+                                    <label for="id_form-__prefix__-item_name">Item Name *</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control" name="form-__prefix__-quantity" id="id_form-__prefix__-quantity" value="1" min="1" placeholder="Quantity">
+                                    <label for="id_form-__prefix__-quantity">Quantity *</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating mb-3">
+                                    <select class="form-control" name="form-__prefix__-category" id="id_form-__prefix__-category">
+                                        <option value="">Choose...</option>
+                                        <option value="books">Books & Study Materials</option>
+                                        <option value="electronics">Electronics</option>
+                                        <option value="clothing">Clothing & Accessories</option>
+                                        <option value="stationery">Stationery</option>
+                                        <option value="sports">Sports Equipment</option>
+                                        <option value="misc">Miscellaneous</option>
+                                    </select>
+                                    <label for="id_form-__prefix__-category">
+                                        <span class="category-icon"><i class="bi bi-box"></i></span>Category *
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <textarea class="form-control" name="form-__prefix__-description" id="id_form-__prefix__-description" style="height: 100px" placeholder="Description"></textarea>
+                                    <label for="id_form-__prefix__-description">Description (Optional)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control" name="form-__prefix__-estimated_value" id="id_form-__prefix__-estimated_value" step="0.01" min="0" placeholder="Estimated Value">
+                                    <label for="id_form-__prefix__-estimated_value">Estimated Value (₹)</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" name="form-__prefix__-DELETE" id="id_form-__prefix__-DELETE">
+                    </div>
+                    
+                    <!-- First visible item form -->
+                    <div class="item-form">
+                        <span class="remove-item" onclick="removeItemForm(this)">
+                            <i class="bi bi-x-circle"></i>
+                        </span>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" name="form-0-item_name" id="id_form-0-item_name" placeholder="Item Name">
+                                    <label for="id_form-0-item_name">Item Name *</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control" name="form-0-quantity" id="id_form-0-quantity" value="1" min="1" placeholder="Quantity">
+                                    <label for="id_form-0-quantity">Quantity *</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating mb-3">
+                                    <select class="form-control" name="form-0-category" id="id_form-0-category">
+                                        <option value="">Choose...</option>
+                                        <option value="books">Books & Study Materials</option>
+                                        <option value="electronics">Electronics</option>
+                                        <option value="clothing">Clothing & Accessories</option>
+                                        <option value="stationery">Stationery</option>
+                                        <option value="sports">Sports Equipment</option>
+                                        <option value="misc">Miscellaneous</option>
+                                    </select>
+                                    <label for="id_form-0-category">
+                                        <span class="category-icon"><i class="bi bi-box"></i></span>Category *
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <textarea class="form-control" name="form-0-description" id="id_form-0-description" style="height: 100px" placeholder="Description"></textarea>
+                                    <label for="id_form-0-description">Description (Optional)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control" name="form-0-estimated_value" id="id_form-0-estimated_value" step="0.01" min="0" placeholder="Estimated Value">
+                                    <label for="id_form-0-estimated_value">Estimated Value (₹)</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" name="form-0-DELETE" id="id_form-0-DELETE">
+                    </div>
+                </div>
+
+                <!-- Add Item Button -->
+                <button type="button" class="add-item-btn" onclick="addItemForm()">
+                    <i class="bi bi-plus-circle animated-icon"></i>
+                    <div class="mt-2">
+                        <strong>Add Another Item</strong>
+                        <div class="small text-muted">Click to add more items to your storage</div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="form-section" id="preview-section" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="bi bi-eye"></i> Preview
+                    </h2>
+                    <p class="text-muted">Review your items before submitting</p>
+                </div>
+                
+                <div class="preview-card" id="items-preview">
+                    <!-- Preview content will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Form Management Fields -->
+            <input type="hidden" name="form-TOTAL_FORMS" value="1" id="id_form-TOTAL_FORMS">
+            <input type="hidden" name="form-INITIAL_FORMS" value="0" id="id_form-INITIAL_FORMS">
+            <input type="hidden" name="form-MIN_NUM_FORMS" value="0" id="id_form-MIN_NUM_FORMS">
+            <input type="hidden" name="form-MAX_NUM_FORMS" value="1000" id="id_form-MAX_NUM_FORMS">
+
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                    <i class="bi bi-check-circle"></i> Create Storage Entry
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFormValidation(); 
+    
+    if (document.getElementById('storageForm')) {
+        updatePreview();
+        addCategoryIcons();
+        updateProgress();
+
+        const storageForm = document.getElementById('storageForm');
+        storageForm.addEventListener('input', updatePreview);
+        storageForm.addEventListener('change', updatePreview);
+        storageForm.addEventListener('input', updateProgress);
+    }
+});
+
+function initializeFormValidation() {
+    const form = document.getElementById('storageForm');
+    
+    if (!form) {
+        return; 
+    }
+    
+    form.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            alert('Please review the form. All items must have a name, quantity, and category.');
+        } else {
+            showLoading(document.getElementById('submitBtn'));
+        }
+    });
+}
+
+function updateProgress() {
+    const hasValidItem = Array.from(document.querySelectorAll('.item-form'))
+                              .some(form => form.querySelector('input[name*="item_name"]')?.value.trim() !== '');
+    
+    const steps = document.querySelectorAll('.step');
+    if (!steps.length) return;
+    
+    const step1 = steps[0];
+    const step2 = steps[1];
+
+    if (hasValidItem) {
+        step1.classList.add('completed');
+        step1.classList.remove('active');
+        step2.classList.add('active');
+    } else {
+        step1.classList.add('active');
+        step1.classList.remove('completed');
+        step2.classList.remove('active');
+    }
+}
+
+function addItemForm() {
+    const container = document.getElementById('items-container');
+    const totalFormsInput = document.querySelector('input[name$="-TOTAL_FORMS"]');
+    
+    if (!totalFormsInput) {
+        alert("Cannot add items. Form management fields not found.");
+        return;
+    }
+    
+    const currentTotal = parseInt(totalFormsInput.value);
+    const templateForm = container.querySelector('.item-form[style*="display: none"]');
+    
+    if (!templateForm) {
+        // Create a new form by cloning the last visible form
+        const lastForm = Array.from(container.querySelectorAll('.item-form')).pop();
+        if (!lastForm) return;
+        
+        const newForm = lastForm.cloneNode(true);
+        updateFormIndices(newForm, currentTotal);
+        clearFormValues(newForm);
+        
+        // Add remove button if it doesn't exist
+        if (!newForm.querySelector('.remove-item')) {
+            const removeBtn = document.createElement('span');
+            removeBtn.className = 'remove-item';
+            removeBtn.innerHTML = '<i class="bi bi-x-circle"></i>';
+            removeBtn.onclick = function() { removeItemForm(this); };
+            newForm.insertBefore(removeBtn, newForm.firstChild);
+        }
+        
+        container.appendChild(newForm);
+    } else {
+        // Use the template form
+        const newForm = templateForm.cloneNode(true);
+        updateFormIndices(newForm, currentTotal);
+        clearFormValues(newForm);
+        newForm.style.display = 'block';
+        container.appendChild(newForm);
+    }
+    
+    totalFormsInput.value = currentTotal + 1;
+    updatePreview();
+    updateProgress();
+}
+
+function updateFormIndices(form, index) {
+    form.querySelectorAll('input, select, textarea').forEach(field => {
+        if (field.name) {
+            field.name = field.name.replace(/-\d+-|-__prefix__-/, `-${index}-`);
+        }
+        if (field.id) {
+            field.id = field.id.replace(/-\d+-|-__prefix__-/, `-${index}-`);
+        }
+    });
+    form.querySelectorAll('label').forEach(label => {
+        if (label.htmlFor) {
+            label.htmlFor = label.htmlFor.replace(/-\d+-|-__prefix__-/, `-${index}-`);
+        }
+    });
+}
+
+function clearFormValues(form) {
+    form.querySelectorAll('input, select, textarea').forEach(field => {
+        if (field.type === 'checkbox') {
+            field.checked = false;
+        } else if (field.name.endsWith('quantity')) {
+            field.value = '1';
+        } else {
+            field.value = '';
+        }
+        field.classList.remove('is-valid', 'is-invalid');
+    });
+}
+
+function updatePreview() {
+    const previewContainer = document.getElementById('items-preview');
+    const previewSection = document.getElementById('preview-section');
+    
+    if (!previewContainer || !previewSection) return;
+
+    let previewHtml = '<h5><i class="bi bi-list-ul"></i> Items Summary</h5>';
+    let itemCount = 0;
+    let totalValue = 0;
+    
+    document.querySelectorAll('.item-form').forEach(form => {
+        if (form.style.display === 'none') return;
+        
+        const itemNameField = form.querySelector('input[name*="item_name"]');
+        const quantityField = form.querySelector('input[name*="quantity"]');
+        const descriptionField = form.querySelector('textarea[name*="description"]');
+        const valueField = form.querySelector('input[name*="estimated_value"]');
+
+        if (!itemNameField || !quantityField) {
+            return;
+        }
+
+        const itemName = itemNameField.value;
+        const quantity = quantityField.value || 0;
+        const description = descriptionField ? descriptionField.value : '';
+        const value = valueField ? valueField.value : 0;
+        
+        if (itemName.trim() && parseInt(quantity) > 0) {
+            itemCount += parseInt(quantity);
+            totalValue += parseFloat(value) * parseInt(quantity);
+            
+            previewHtml += `
+                <div class="preview-item">
+                    <div class="flex-grow-1">
+                        <strong>${itemName}</strong>
+                        ${description ? `<div class="small text-muted">${description}</div>` : ''}
+                    </div>
+                    <span class="quantity-badge">${quantity}x</span>
+                </div>`;
+        }
+    });
+    
+    if (itemCount > 0) {
+        previewHtml += `
+            <div class="mt-3 pt-3 border-top d-flex justify-content-between">
+                <div><strong>Total Items:</strong> <span class="text-primary">${itemCount}</span></div>
+                <div><strong>Total Value:</strong> <span class="text-success">₹${totalValue.toLocaleString()}</span></div>
+            </div>`;
+        previewSection.style.display = 'block';
+    } else {
+        previewSection.style.display = 'none';
+    }
+    
+    previewContainer.innerHTML = previewHtml;
+}
+
+function validateForm() {
+    let isGloballyValid = true;
+    let validItemCount = 0;
+    const errors = [];
+
+    const itemForms = document.querySelectorAll('.item-form');
+    
+    itemForms.forEach((form, index) => {
+        if (form.style.display === 'none') return;
+
+        const itemNameField = form.querySelector('input[name*="item_name"]');
+        const quantityField = form.querySelector('input[name*="quantity"]');
+        const categoryField = form.querySelector('select[name*="category"]');
+        
+        if (!itemNameField) return;
+
+        // Check if form has any data entered
+        const hasData = itemNameField.value.trim() || 
+                       (quantityField && quantityField.value && parseInt(quantityField.value) > 0) ||
+                       (categoryField && categoryField.value);
+
+        if (hasData) {
+            let isThisFormValid = true;
+            validItemCount++;
+
+            // Validate item name
+            if (!itemNameField.value.trim()) {
+                itemNameField.classList.add('is-invalid');
+                isThisFormValid = false;
+                errors.push(`Item ${index + 1}: Name is required`);
+            } else {
+                itemNameField.classList.remove('is-invalid');
+                itemNameField.classList.add('is-valid');
+            }
+
+            // Validate quantity
+            if (!quantityField || !quantityField.value || parseInt(quantityField.value) < 1) {
+                quantityField?.classList.add('is-invalid');
+                isThisFormValid = false;
+                errors.push(`Item ${index + 1}: Valid quantity is required`);
+            } else {
+                quantityField.classList.remove('is-invalid');
+                quantityField.classList.add('is-valid');
+            }
+            
+            // Validate category
+            if (!categoryField || !categoryField.value) {
+                categoryField?.classList.add('is-invalid');
+                isThisFormValid = false;
+                errors.push(`Item ${index + 1}: Category is required`);
+            } else {
+                categoryField.classList.remove('is-invalid');
+                categoryField.classList.add('is-valid');
+            }
+
+            if (!isThisFormValid) {
+                isGloballyValid = false;
+            }
+        } else {
+            // Remove validation classes if form is empty
+            itemNameField.classList.remove('is-valid', 'is-invalid');
+            quantityField?.classList.remove('is-valid', 'is-invalid');
+            categoryField?.classList.remove('is-valid', 'is-invalid');
+        }
+    });
+
+    if (validItemCount === 0) {
+        isGloballyValid = false;
+        errors.push('You must add at least one item to your storage entry.');
+        const firstInput = document.querySelector('input[name*="item_name"]');
+        if (firstInput) {
+            firstInput.classList.add('is-invalid');
+            firstInput.focus();
+        }
+    }
+
+    if (!isGloballyValid && errors.length > 0) {
+        alert('Please fix the following errors:\n\n' + errors.join('\n'));
+    }
+
+    return isGloballyValid;
+}
+
+function addCategoryIcons() {
+    document.querySelectorAll('select[name*="category"]').forEach(select => {
+        select.addEventListener('change', function() {
+            const icon = getCategoryIcon(this.value);
+            const label = this.closest('.form-floating').querySelector('label');
+            if (label) {
+                label.innerHTML = `<span class="category-icon">${icon}</span>Category`;
+            }
+        });
+        if(select.value) {
+           const icon = getCategoryIcon(select.value);
+            const label = select.closest('.form-floating').querySelector('label');
+            if (label) {
+                label.innerHTML = `<span class="category-icon">${icon}</span>Category`;
+            }
+        }
+    });
+}
+
+function getCategoryIcon(category) {
+    const icons = {
+        'books': '<i class="bi bi-book"></i>',
+        'electronics': '<i class="bi bi-laptop"></i>',
+        'clothing': '<i class="bi bi-bag"></i>',
+        'stationery': '<i class="bi bi-pen"></i>',
+        'sports': '<i class="bi bi-trophy"></i>',
+        'misc': '<i class="bi bi-box"></i>'
+    };
+    return icons[category] || '<i class="bi bi-box"></i>';
+}
+
+function showLoading(button) {
+    if (!button) return;
+    button.disabled = true;
+    button.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...`;
+}
+
+function hideLoading(button) {
+    if (!button) return;
+    button.disabled = false;
+    button.innerHTML = `<i class="bi bi-check-circle"></i> Create Storage Entry`;
+}
+</script>
+{% endblock %}

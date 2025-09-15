@@ -1,0 +1,428 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Sanrakshan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+    .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 10px;
+        position: relative;
+        color: #6c757d;
+        font-weight: bold;
+    }
+    .step.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    .step.completed {
+        background-color: var(--accent-color);
+        color: white;
+    }
+    .step::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 100%;
+        width: 20px;
+        height: 2px;
+        background-color: #e9ecef;
+        transform: translateY(-50%);
+    }
+    .step:last-child::after {
+        display: none;
+    }
+    .step.completed::after {
+        background-color: var(--accent-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-plus"></i>
+                        Student Registration
+                    </h4>
+                    <p class="mb-0 small">Create your storage system account</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Progress Steps -->
+                    <div class="step-indicator">
+                        <div class="step active" id="step1">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div class="step" id="step2">
+                            <i class="bi bi-mortarboard"></i>
+                        </div>
+                    </div>
+                    
+                    <form method="post" id="registrationForm" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Step 1: User Information -->
+                        <div id="userInfo" class="step-content">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-1-circle"></i>
+                                Personal Information
+                            </h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                        First Name <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.first_name.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                        Last Name <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.last_name.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">
+                                    Email Address <span class="text-danger">*</span>
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.email.errors }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">{{ form.email.help_text }}</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">
+                                    Username <span class="text-danger">*</span>
+                                </label>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.username.errors }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">{{ form.username.help_text }}</div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.password1.id_for_label }}" class="form-label">
+                                        Password <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        {{ form.password1 }}
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword1">
+                                            <i class="bi bi-eye" id="passwordIcon1"></i>
+                                        </button>
+                                    </div>
+                                    {% if form.password1.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.password1.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.password1.help_text|safe }}</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.password2.id_for_label }}" class="form-label">
+                                        Confirm Password <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        {{ form.password2 }}
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword2">
+                                            <i class="bi bi-eye" id="passwordIcon2"></i>
+                                        </button>
+                                    </div>
+                                    {% if form.password2.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.password2.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.password2.help_text }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-primary" id="nextStep">
+                                    Next: Student Details
+                                    <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 2: Student Information -->
+                        <div id="studentInfo" class="step-content" style="display: none;">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-2-circle"></i>
+                                Student Information
+                            </h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ profile_form.roll_number.id_for_label }}" class="form-label">
+                                        Roll Number <span class="text-danger">*</span>
+                                    </label>
+                                    {{ profile_form.roll_number }}
+                                    {% if profile_form.roll_number.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ profile_form.roll_number.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">{{ profile_form.roll_number.help_text }}</div>
+                                    <div id="rollNumberFeedback" class="small"></div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ profile_form.department.id_for_label }}" class="form-label">
+                                        Department <span class="text-danger">*</span>
+                                    </label>
+                                    {{ profile_form.department }}
+                                    {% if profile_form.department.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ profile_form.department.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ profile_form.year.id_for_label }}" class="form-label">
+                                        Academic Year <span class="text-danger">*</span>
+                                    </label>
+                                    {{ profile_form.year }}
+                                    {% if profile_form.year.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ profile_form.year.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ profile_form.phone_number.id_for_label }}" class="form-label">
+                                        Phone Number
+                                    </label>
+                                    {{ profile_form.phone_number }}
+                                    {% if profile_form.phone_number.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ profile_form.phone_number.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">{{ profile_form.phone_number.help_text }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ profile_form.hostel_room.id_for_label }}" class="form-label">
+                                        Hostel Room / Day Scholar
+                                    </label>
+                                    {{ profile_form.hostel_room }}
+                                    {% if profile_form.hostel_room.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ profile_form.hostel_room.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">{{ profile_form.hostel_room.help_text }}</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ profile_form.emergency_contact.id_for_label }}" class="form-label">
+                                        Emergency Contact
+                                    </label>
+                                    {{ profile_form.emergency_contact }}
+                                    {% if profile_form.emergency_contact.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ profile_form.emergency_contact.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">{{ profile_form.emergency_contact.help_text }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-outline-secondary w-100" id="prevStep">
+                                        <i class="bi bi-arrow-left"></i>
+                                        Previous
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-success w-100" id="registerBtn">
+                                        <i class="bi bi-person-plus"></i>
+                                        Create Account
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Login Link -->
+                    <div class="text-center mt-4">
+                        <hr>
+                        <p class="mb-0">
+                            Already have an account?
+                            <a href="{% url 'accounts:login' %}" class="text-primary text-decoration-none fw-bold">
+                                <i class="bi bi-box-arrow-in-right"></i>
+                                Login here
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const userInfo = document.getElementById('userInfo');
+    const studentInfo = document.getElementById('studentInfo');
+    const nextStep = document.getElementById('nextStep');
+    const prevStep = document.getElementById('prevStep');
+    const registerBtn = document.getElementById('registerBtn');
+    const form = document.getElementById('registrationForm');
+    
+    // Step navigation
+    nextStep.addEventListener('click', function() {
+        // Validate first step
+        if (validateStep1()) {
+            step1.classList.remove('active');
+            step1.classList.add('completed');
+            step2.classList.add('active');
+            userInfo.style.display = 'none';
+            studentInfo.style.display = 'block';
+        }
+    });
+    
+    prevStep.addEventListener('click', function() {
+        step2.classList.remove('active');
+        step1.classList.remove('completed');
+        step1.classList.add('active');
+        userInfo.style.display = 'block';
+        studentInfo.style.display = 'none';
+    });
+    
+    // Password visibility toggles
+    setupPasswordToggle('togglePassword1', 'id_password1', 'passwordIcon1');
+    setupPasswordToggle('togglePassword2', 'id_password2', 'passwordIcon2');
+    
+    function setupPasswordToggle(buttonId, fieldId, iconId) {
+        const button = document.getElementById(buttonId);
+        const field = document.getElementById(fieldId);
+        const icon = document.getElementById(iconId);
+        
+        button.addEventListener('click', function() {
+            const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
+            field.setAttribute('type', type);
+            
+            if (type === 'text') {
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        });
+    }
+    
+    // Roll number availability check
+    const rollNumberField = document.getElementById('{{ profile_form.roll_number.id_for_label }}');
+    const rollNumberFeedback = document.getElementById('rollNumberFeedback');
+    
+    rollNumberField.addEventListener('blur', function() {
+        const rollNumber = this.value.trim().toUpperCase();
+        if (rollNumber.length >= 3) {
+            checkRollNumberAvailability(rollNumber);
+        }
+    });
+    
+    function checkRollNumberAvailability(rollNumber) {
+        // This would be an AJAX call in real implementation
+        // For now, just simulate the check
+        rollNumberFeedback.innerHTML = '<span class="text-info"><i class="bi bi-hourglass-split"></i> Checking availability...</span>';
+        
+        setTimeout(() => {
+            // Simulate check result
+            const available = !rollNumber.startsWith('20CS001'); // Mock unavailability
+            if (available) {
+                rollNumberFeedback.innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> Available</span>';
+                rollNumberField.classList.remove('is-invalid');
+                rollNumberField.classList.add('is-valid');
+            } else {
+                rollNumberFeedback.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Already registered</span>';
+                rollNumberField.classList.remove('is-valid');
+                rollNumberField.classList.add('is-invalid');
+            }
+        }, 1000);
+    }
+    
+    // Form validation
+    function validateStep1() {
+        let isValid = true;
+        const requiredFields = ['id_first_name', 'id_last_name', 'id_email', 'id_username', 'id_password1', 'id_password2'];
+        
+        requiredFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+                field.classList.add('is-valid');
+            }
+        });
+        
+        // Check password match
+        const password1 = document.getElementById('id_password1');
+        const password2 = document.getElementById('id_password2');
+        if (password1.value !== password2.value) {
+            password2.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+    
+    // Form submission
+    form.addEventListener('submit', function() {
+        showLoading(registerBtn);
+    });
+});
+</script>
+{% endblock %}
