@@ -199,3 +199,241 @@ For issues and questions:
 ---
 
 **Sanrakshan - Smart Storage Management for Educational Institutions**
+
+## 🚨 Troubleshooting Guide
+
+### Common Issues and Solutions
+
+#### 1. Server Won't Start / Hangs
+**Problem**: Django server hangs during startup
+**Solution**:
+```bash
+# Create required directories
+mkdir -p logs static
+
+# Run with specific flags to avoid hanging
+python manage.py runserver --noreload --nothreading
+```
+
+#### 2. Database Errors (OperationalError)
+**Problem**: "no such table" or "OperationalError" when accessing pages
+**Solution**:
+```bash
+# Run migrations to create database tables
+python manage.py migrate
+
+# If issues persist, reset database
+rm db.sqlite3
+python manage.py migrate
+python manage.py createsuperuser
+```
+
+#### 3. Missing StudentProfile Error
+**Problem**: "No StudentProfile matches the given query"
+**Solution**:
+```bash
+# Create student profiles for existing users
+python manage.py shell -c "
+from accounts.models import User, StudentProfile
+for user in User.objects.all():
+    if not hasattr(user, 'student_profile'):
+        StudentProfile.objects.create(
+            user=user,
+            roll_number=f'2024BCS{user.id:04d}',
+            department='BCS',
+            year=2,
+            phone_number='9876543210'
+        )
+        print(f'Created profile for {user.username}')
+"
+```
+
+#### 4. Module Import Errors
+**Problem**: "ModuleNotFoundError" for packages like `dj_database_url`
+**Solution**:
+```bash
+# Ensure virtual environment is activated
+source venv/bin/activate
+
+# Install all requirements
+pip install -r requirements.txt
+
+# If specific package missing
+pip install dj-database-url python-decouple
+```
+
+#### 5. Permission Denied Errors
+**Problem**: Cannot access certain pages or features
+**Solution**:
+```bash
+# Create superuser account
+python manage.py createsuperuser
+
+# Or create via shell with profile
+python manage.py shell -c "
+from accounts.models import User, StudentProfile
+user = User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+StudentProfile.objects.create(
+    user=user,
+    roll_number='2024BCS0001',
+    department='BCS',
+    year=1,
+    phone_number='9876543210'
+)
+"
+```
+
+### 6. Static Files Not Loading
+**Problem**: CSS/JS files not loading properly
+**Solution**:
+```bash
+# Create static directory
+mkdir -p static
+
+# Collect static files (for production)
+python manage.py collectstatic
+
+# For development, ensure DEBUG=True in .env
+```
+
+## 🔧 Advanced Setup
+
+### Complete First-Time Setup Script
+```bash
+#!/bin/bash
+# Complete setup script for Sanrakshan
+
+# 1. Create virtual environment
+python -m venv venv
+source venv/bin/activate
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Create required directories
+mkdir -p logs static media
+
+# 4. Setup environment
+cp .env.example .env
+echo "Please edit .env file with your settings"
+
+# 5. Database setup
+python manage.py migrate
+
+# 6. Create superuser
+python manage.py shell -c "
+from accounts.models import User, StudentProfile
+if not User.objects.filter(username='admin').exists():
+    user = User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+    StudentProfile.objects.create(
+        user=user,
+        roll_number='2024BCS0001',
+        department='BCS',
+        year=1,
+        phone_number='9876543210'
+    )
+    print('Superuser created: admin/admin123')
+"
+
+# 7. Start server
+python manage.py runserver
+```
+
+### Environment Variables Explained
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `SECRET_KEY` | Django secret key for security | `django-insecure-xyz...` |
+| `DEBUG` | Enable debug mode (True/False) | `True` |
+| `ALLOWED_HOSTS` | Comma-separated allowed hosts | `localhost,127.0.0.1` |
+| `DATABASE_URL` | Database connection string | `sqlite:///db.sqlite3` |
+| `EMAIL_HOST` | SMTP server for emails | `smtp.gmail.com` |
+| `EMAIL_HOST_USER` | Email username | `your-email@gmail.com` |
+| `EMAIL_HOST_PASSWORD` | Email password/app password | `your-app-password` |
+
+### Production Checklist
+
+- [ ] Set `DEBUG=False` in production
+- [ ] Configure proper `ALLOWED_HOSTS`
+- [ ] Use PostgreSQL/MySQL instead of SQLite
+- [ ] Set up proper email backend (SMTP)
+- [ ] Configure static file serving (nginx/Apache)
+- [ ] Set up SSL certificates
+- [ ] Configure backup strategy
+- [ ] Set up monitoring and logging
+- [ ] Use environment variables for all secrets
+- [ ] Enable security middleware
+
+### Testing the Installation
+
+```bash
+# Test basic functionality
+python manage.py check
+
+# Test database connection
+python manage.py shell -c "from django.db import connection; connection.ensure_connection(); print('DB OK')"
+
+# Test user creation
+python manage.py shell -c "from accounts.models import User; print('Users:', User.objects.count())"
+
+# Test server startup
+timeout 5s python manage.py runserver --noreload || echo "Server test complete"
+```
+
+## 📊 System Requirements
+
+### Minimum Requirements
+- **OS**: Linux, macOS, or Windows
+- **Python**: 3.8 or higher
+- **RAM**: 512MB minimum, 1GB recommended
+- **Storage**: 100MB for application, additional for database
+- **Browser**: Modern browser with JavaScript enabled
+
+### Recommended Production Setup
+- **OS**: Ubuntu 20.04+ or CentOS 8+
+- **Python**: 3.9+
+- **RAM**: 2GB+
+- **Storage**: 10GB+ with SSD
+- **Database**: PostgreSQL 12+
+- **Web Server**: nginx + gunicorn
+- **SSL**: Let's Encrypt certificates
+
+## 🔍 Monitoring and Maintenance
+
+### Log Files
+- **Django Logs**: `logs/django.log`
+- **Error Logs**: Check Django admin for error reports
+- **Access Logs**: Web server logs (nginx/Apache)
+
+### Regular Maintenance
+```bash
+# Database cleanup (monthly)
+python manage.py shell -c "
+from storage.models import StorageEntry
+from django.utils import timezone
+from datetime import timedelta
+
+# Clean up old expired entries (older than 6 months)
+cutoff = timezone.now() - timedelta(days=180)
+old_entries = StorageEntry.objects.filter(
+    status='expired',
+    updated_at__lt=cutoff
+)
+print(f'Cleaning up {old_entries.count()} old entries')
+old_entries.delete()
+"
+
+# Update dependencies (quarterly)
+pip list --outdated
+pip install -r requirements.txt --upgrade
+
+# Database backup (weekly)
+python manage.py dumpdata > backup_$(date +%Y%m%d).json
+```
+
+---
+
+**Need Help?** 
+- Check the troubleshooting section above
+- Review Django documentation: https://docs.djangoproject.com/
+- Create an issue with detailed error messages and system information
