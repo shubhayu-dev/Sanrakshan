@@ -72,6 +72,39 @@ EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 COLLEGE_EMAIL_DOMAIN=@yourcollege.edu
 TIME_ZONE=Asia/Kolkata
 ```
+### Visual Guide
+
+**Initial Screen to Login**
+<img width="1905" height="972" alt="Screenshot from 2026-01-21 20-49-15" src="https://github.com/user-attachments/assets/82421a97-5c3d-4134-a1c9-c6a7483e23a6" />
+
+**Main Dashboard**
+- Store Items : Store the items 
+- Claim Items : Claim the items 
+<img width="1905" height="972" alt="Screenshot from 2026-01-21 20-52-58" src="https://github.com/user-attachments/assets/55062197-fe01-4a47-9371-4e5d903b3a48" />
+
+**Store Items**
+- Enter all the item details that are to be kept
+<img width="1905" height="972" alt="Screenshot from 2026-01-21 20-55-15" src="https://github.com/user-attachments/assets/bdfea773-a010-428b-a022-60dede10ed8c" />
+
+**QR Code page**
+- The qr code is generated
+- The qr code is to be printed and pasted on the items this helps in keeping records and confusion on finding or recognizing stuff that are kept
+  <img width="1905" height="972" alt="Screenshot from 2026-01-21 20-54-35" src="https://github.com/user-attachments/assets/7b399659-d5d0-42dc-a168-fc852cafbc9c" />
+ <img width="950" height="967" alt="image" src="https://github.com/user-attachments/assets/0afa1f99-41b0-4c01-97b6-fbd98e6b1046" />
+
+ **Dashboard after storing items**
+<img width="1905" height="972" alt="Screenshot from 2026-01-21 20-54-48" src="https://github.com/user-attachments/assets/b7b26573-eb39-41e4-9e4c-5173ffd304db" />
+
+**Claim items view**
+-Here is the option to claim the items after which the items are marked as claimed
+<img width="1905" height="972" alt="Screenshot from 2026-01-21 20-54-55" src="https://github.com/user-attachments/assets/a4ea4256-94f0-4229-9165-48f03e33d72e" />
+
+**Dashboard after claiming items**
+<img width="1905" height="972" alt="Screenshot from 2026-01-21 20-55-06" src="https://github.com/user-attachments/assets/f0f81b54-3ae9-4510-bc6f-9a12c8dc9a81" />
+
+**Profile**
+<img width="950" height="967" alt="image" src="https://github.com/user-attachments/assets/f579d361-1e3f-4fac-b310-fc040b072bf7" />
+
 
 ### College Customization
 1. **Email Domain**: Update `COLLEGE_EMAIL_DOMAIN` in `.env`
