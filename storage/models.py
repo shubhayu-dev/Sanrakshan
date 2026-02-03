@@ -179,7 +179,7 @@ class StorageEntry(models.Model):
     
     def get_absolute_url(self):
         """Get URL for QR code display."""
-        return reverse('qr_codes:display', kwargs={'entry_id': self.entry_id})
+        return reverse('unique_codes:display', kwargs={'entry_id': self.entry_id})
     
     # Business logic methods
     def claim_items(self, claimed_by=None):

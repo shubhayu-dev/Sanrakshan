@@ -31,12 +31,12 @@ def create_superuser():
             try:
                 profile = StudentProfile.objects.create(
                     user=admin_user,
-                    roll_number='ADMIN001',
-                    department='OTHER',
+                    roll_number='2024BCS9999',
+                    department='BCS',
                     year=1,
-                    phone_number='+91 9999999999',
+                    phone_number='+919999999999',
                     hostel_room='Admin Office',
-                    emergency_contact='+91 9999999999'
+                    emergency_contact='+919999999999'
                 )
                 print(f"Created admin profile: {profile}")
             except Exception as e:
@@ -52,8 +52,8 @@ def create_superuser():
             'password': 'test123',
             'first_name': 'John',
             'last_name': 'Doe',
-            'roll_number': '20CS001',
-            'department': 'CSE',
+            'roll_number': '2024BCS0001',
+            'department': 'BCS',
             'year': 2
         },
         {
@@ -62,8 +62,8 @@ def create_superuser():
             'password': 'test123',
             'first_name': 'Jane',
             'last_name': 'Smith',
-            'roll_number': '20EC015',
-            'department': 'ECE',
+            'roll_number': '2024BEC0001',
+            'department': 'BEC',
             'year': 3
         }
     ]

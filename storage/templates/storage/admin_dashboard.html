@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+
+{% block title %}Staff Dashboard - Sanrakshan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border: none;
+        transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        opacity: 0.2;
+        position: absolute;
+        right: 20px;
+        top: 20px;
+    }
+
+    .search-box {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .verification-result {
+        display: none;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px dashed #dee2e6;
+    }
+
+    .code-input {
+        font-family: 'Courier New', monospace;
+        font-size: 1.5rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-speedometer2"></i> Staff Dashboard</h2>
+        <span class="text-muted">{{ now|date:"l, F d, Y" }}</span>
+    </div>
+
+    <!-- Statistics Row -->
+    <div class="row mb-5">
+        <div class="col-md-3">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Active Items</h5>
+                    <h2 class="display-4">{{ stats.total_active }}</h2>
+                    <i class="bi bi-box-seam stat-icon"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Claimed</h5>
+                    <h2 class="display-4">{{ stats.total_claimed }}</h2>
+                    <i class="bi bi-check-circle stat-icon"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">New Today</h5>
+                    <h2 class="display-4">{{ stats.today_entries }}</h2>
+                    <i class="bi bi-plus-circle stat-icon"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Claims Today</h5>
+                    <h2 class="display-4">{{ stats.today_claims }}</h2>
+                    <i class="bi bi-arrow-up-right-circle stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Verification Section -->
+        <div class="col-lg-7 mb-4">
+            <div class="search-box">
+                <h4 class="mb-3"><i class="bi bi-shield-check"></i> Verify Unique Code</h4>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+                    <input type="text" id="codeInput" class="form-control code-input" placeholder="XXXX-XXXX"
+                        maxlength="20">
+                    <button class="btn btn-primary" type="button" id="verifyBtn">Verify</button>
+                </div>
+
+                <div id="loadingSpinner" class="text-center my-3 d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+
+                <div id="verificationResult" class="verification-result">
+                    <!-- Result injected here via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Scans</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for scan in recent_scans %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ scan.qr_code.storage_entry.student.user.get_full_name }}</h6>
+                            <small class="text-muted">{{ scan.scanned_at|timesince }} ago</small>
+                        </div>
+                        <p class="mb-1">
+                            Status:
+                            {% if scan.is_valid %}
+                            <span class="badge bg-success">Valid</span>
+                            {% else %}
+                            <span class="badge bg-danger">Invalid</span>
+                            {% endif %}
+                            Code: <code>{{ scan.qr_code.code }}</code>
+                        </p>
+                        <small class="text-muted">By: {{ scan.scanned_by.get_full_name|default:"Unknown" }}</small>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center text-muted">No recent scans</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const codeInput = document.getElementById('codeInput');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const resultDiv = document.getElementById('verificationResult');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        // Handle Verify Button
+        verifyBtn.addEventListener('click', performVerification);
+
+        // Handle Enter Key
+        codeInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                performVerification();
+            }
+        });
+
+        function performVerification() {
+            const code = codeInput.value.trim();
+            if (!code) return;
+
+            // Reset UI
+            resultDiv.style.display = 'none';
+            resultDiv.innerHTML = '';
+            loadingSpinner.classList.remove('d-none');
+            verifyBtn.disabled = true;
+
+            // Call API
+            fetch(`{% url 'unique_codes:verify' %}?code=${encodeURIComponent(code)}`)
+                .then(response => response.json())
+                .then(data => {
+                    loadingSpinner.classList.add('d-none');
+                    verifyBtn.disabled = false;
+
+                    if (data.success) {
+                        showSuccess(data);
+                    } else {
+                        showError(data.message);
+                    }
+                    resultDiv.style.display = 'block';
+                })
+                .catch(error => {
+                    loadingSpinner.classList.add('d-none');
+                    verifyBtn.disabled = false;
+                    showError('Network error occurred. Please try again.');
+                    resultDiv.style.display = 'block';
+                });
+        }
+
+        function showSuccess(data) {
+            let itemsHtml = '<ul class="list-group mb-3">';
+            data.items.forEach(item => {
+                itemsHtml += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                ${item.item_name}
+                <span class="badge bg-secondary rounded-pill">${item.quantity}</span>
+            </li>`;
+            });
+            itemsHtml += '</ul>';
+
+            const claimButton = data.can_claim ?
+                `<button onclick="processClaim('${data.entry_id}')" class="btn btn-success w-100 btn-lg"><i class="bi bi-box-seam"></i> Claim Items (Return to Student)</button>` :
+                `<div class="alert alert-warning">Cannot claim: ${data.storage_info.status}</div>`;
+
+            resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h4 class="alert-heading"><i class="bi bi-check-circle-fill"></i> Valid Code</h4>
+                <p>Belongs to: <strong>${data.student_info.name}</strong> (${data.student_info.roll_number})</p>
+                <hr>
+                <p class="mb-0">Created: ${new Date(data.storage_info.created_at).toLocaleString()}</p>
+            </div>
+            
+            <h5>Stored Items</h5>
+            ${itemsHtml}
+            
+            <div class="mt-4">
+                ${claimButton}
+            </div>
+        `;
+        }
+
+        function showError(msg) {
+            resultDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <h4 class="alert-heading"><i class="bi bi-x-circle-fill"></i> Error</h4>
+                <p>${msg}</p>
+            </div>
+        `;
+        }
+
+        // Make claim function global so the button can call it
+        window.processClaim = function (entryId) {
+            if (!confirm('Are you sure you want to mark these items as CLAIMED? This cannot be undone.')) return;
+
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', csrfToken);
+
+            fetch(`/qr/process-claim/${entryId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Success: ' + data.message);
+                        location.reload(); // Reload to update stats
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
+        }
+    });
+</script>
+{% endblock %}

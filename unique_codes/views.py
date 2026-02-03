@@ -1,12 +1,12 @@
 """
-Professional QR code views for storage management.
+Professional Unique Code views for storage management.
 
 Features:
-- Secure QR code generation and display
-- QR code scanning with validation
-- Print-ready QR code layout
-- Scan tracking and auditing
-- Staff-only QR verification
+- Secure Unique Code generation and display
+- Code verification and validation
+- Print-ready layout
+- Scan/Verify tracking and auditing
+- Staff-only verification
 """
 
 from django.shortcuts import render, get_object_or_404, redirect
@@ -34,20 +34,20 @@ def is_staff_member(user):
 
 @login_required
 def display_qr_code(request, entry_id):
-    """Display QR code for a storage entry with print-ready layout."""
+    """Display Unique Code for a storage entry."""
     storage_entry = get_object_or_404(
         StorageEntry, 
         entry_id=entry_id,
         student__user=request.user
     )
     
-    # Get or create QR code image
+    # Get or create Unique Code
     qr_code, created = QRCodeImage.objects.get_or_create(
         storage_entry=storage_entry
     )
     
-    # Generate image if it doesn't exist
-    if not qr_code.image:
+    # Generate code if it doesn't exist
+    if not qr_code.code:
         qr_code.generate_qr_image()
     
     # Get storage items for display
@@ -55,27 +55,24 @@ def display_qr_code(request, entry_id):
     
     context = {
         'storage_entry': storage_entry,
-        'qr_code': qr_code,
+        'unique_code': qr_code.code, # Pass code instead of image
         'items': items,
         'print_mode': request.GET.get('print', False),
-        'qr_scan_url': request.build_absolute_uri(
-            reverse('qr_codes:scan', kwargs={'entry_id': entry_id})
-        ),
     }
     
-    return render(request, 'qr_codes/display.html', context)
+    return render(request, 'unique_codes/display.html', context)
 
 
 @login_required
 def generate_qr_code(request, entry_id):
-    """Force regenerate QR code for a storage entry."""
+    """Force regenerate Unique Code for a storage entry."""
     storage_entry = get_object_or_404(
         StorageEntry, 
         entry_id=entry_id,
         student__user=request.user
     )
     
-    # Get or create QR code
+    # Get or create Unique Code
     qr_code, created = QRCodeImage.objects.get_or_create(
         storage_entry=storage_entry
     )
@@ -83,95 +80,84 @@ def generate_qr_code(request, entry_id):
     # Force regeneration
     qr_code.generate_qr_image(regenerate=True)
     
-    messages.success(request, "QR code has been regenerated successfully!")
+    messages.success(request, "Unique Code has been regenerated successfully!")
     
-    return redirect('qr_codes:display', entry_id=entry_id)
+    return redirect('unique_codes:display', entry_id=entry_id)
 
 
 @user_passes_test(is_staff_member)
-def scan_qr_code(request, entry_id):
-    """Scan and validate QR code - staff only view."""
-    storage_entry = get_object_or_404(StorageEntry, entry_id=entry_id)
+def verify_code(request):
+    """
+    Verify a Unique Code provided via search/input.
+    This replaces the 'scan' logic.
+    """
+    code = request.GET.get('code', '').strip()
     
-    # Check if QR code is active
+    if not code:
+        # If no code, just render the search page (or dashboard)
+        # For now, we return a simple error or redirect, but likely this will be called via AJAX 
+        # or from the dashboard.
+        return JsonResponse({'success': False, 'message': 'No code provided'})
+
+    # Find the QR code object
     try:
-        qr_code = storage_entry.qr_code
-        if not qr_code.is_active:
-            return JsonResponse({
-                'success': False,
-                'message': 'This QR code has been deactivated (items already claimed)',
-                'status': 'deactivated'
-            })
-    except:
-        pass
-    
-    # Only active entries can be processed
-    if storage_entry.status != 'active':
+        qr_code_obj = QRCodeImage.objects.get(code=code)
+        storage_entry = qr_code_obj.storage_entry
+    except QRCodeImage.DoesNotExist:
         return JsonResponse({
-            'success': False,
-            'message': f'This storage entry is {storage_entry.get_status_display().lower()}',
-            'status': storage_entry.status
+            'success': False, 
+            'message': 'Invalid Code. Please check and try again.'
         })
+
+    # Check if active
+    if not qr_code_obj.is_active:
+         return JsonResponse({
+            'success': False,
+            'message': 'This code has been deactivated (items already claimed)',
+            'status': 'deactivated'
+        })
+
+    # Record the 'scan' (verification)
+    QRScan.objects.create(
+        qr_code=qr_code_obj,
+        scanned_by=request.user,
+        ip_address=get_client_ip(request),
+        user_agent=request.META.get('HTTP_USER_AGENT', ''),
+        is_valid=True,
+        action_taken='staff_verification_manual'
+    )
     
-    if request.method == 'POST':
-        # Process QR scan
-        try:
-            qr_code = storage_entry.qr_code
-            
-            # Record the scan
-            scan = QRScan.objects.create(
-                qr_code=qr_code,
-                scanned_by=request.user,
-                ip_address=get_client_ip(request),
-                user_agent=request.META.get('HTTP_USER_AGENT', ''),
-                is_valid=True,
-                action_taken='staff_verification'
-            )
-            
-            # Get storage items
-            items = list(storage_entry.items.values(
-                'item_name', 'category', 'quantity', 'description'
-            ))
-            
-            return JsonResponse({
-                'success': True,
-                'message': 'QR code is valid',
-                'student_info': {
-                    'name': storage_entry.student.user.get_full_name(),
-                    'roll_number': storage_entry.student.roll_number,
-                    'department': storage_entry.student.get_department_display(),
-                    'phone': storage_entry.student.phone_number,
-                },
-                'storage_info': {
-                    'entry_id': str(storage_entry.entry_id),
-                    'created_at': storage_entry.created_at.isoformat(),
-                    'total_items': storage_entry.get_total_items(),
-                    'description': storage_entry.description,
-                    'location': storage_entry.storage_location,
-                },
-                'items': items,
-                'can_claim': True
-            })
-            
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': f'Error processing QR code: {str(e)}'
-            })
+    # Build response data
+    items = list(storage_entry.items.values(
+        'item_name', 'category', 'quantity', 'description'
+    ))
     
-    # GET request - show scan interface
-    context = {
-        'storage_entry': storage_entry,
-        'can_process': storage_entry.status == 'active'
-    }
-    
-    return render(request, 'qr_codes/scan.html', context)
+    return JsonResponse({
+        'success': True,
+        'message': 'Code verified successfully',
+        'entry_id': str(storage_entry.entry_id),
+        'student_info': {
+            'name': storage_entry.student.user.get_full_name(),
+            'roll_number': storage_entry.student.roll_number,
+            'department': storage_entry.student.get_department_display(),
+            'phone': storage_entry.student.phone_number,
+        },
+        'storage_info': {
+            'created_at': storage_entry.created_at.isoformat(),
+            'total_items': storage_entry.get_total_items(),
+            'description': storage_entry.description,
+            'location': storage_entry.storage_location,
+            'status': storage_entry.status
+        },
+        'items': items,
+        'can_claim': storage_entry.status == 'active'
+    })
 
 
 @user_passes_test(is_staff_member)
 @require_POST
 def process_claim(request, entry_id):
-    """Process item claim after QR validation - staff only."""
+    """Process item claim - staff only."""
     storage_entry = get_object_or_404(StorageEntry, entry_id=entry_id)
     
     if storage_entry.status != 'active':
@@ -200,13 +186,13 @@ def process_claim(request, entry_id):
             ip_address=get_client_ip(request),
             user_agent=request.META.get('HTTP_USER_AGENT', ''),
             is_valid=True,
-            action_taken='item_claimed',
+            action_taken='item_claimed_manual',
             notes=notes
         )
         
         return JsonResponse({
             'success': True,
-            'message': f'Items successfully claimed for {storage_entry.student.user.get_full_name()}. QR code has been deactivated.',
+            'message': f'Items successfully claimed for {storage_entry.student.user.get_full_name()}. Code deactivated.',
             'claimed_at': storage_entry.claimed_at.isoformat()
         })
         
@@ -216,6 +202,35 @@ def process_claim(request, entry_id):
             'message': f'Error claiming items: {str(e)}'
         })
 
+
+@user_passes_test(is_staff_member)
+def bulk_scan_interface(request):
+    """
+    Hub for staff to enter codes. 
+    Renamed conceptually to 'Staff Dashboard' (or part of it).
+    """
+    recent_scans = QRScan.objects.select_related(
+        'qr_code__storage_entry__student__user'
+    ).order_by('-scanned_at')[:20]
+    
+    active_entries_count = StorageEntry.objects.filter(status='active').count()
+    
+    context = {
+        'recent_scans': recent_scans,
+        'active_entries_count': active_entries_count,
+    }
+    
+    return render(request, 'unique_codes/bulk_scan.html', context)
+
+
+def get_client_ip(request):
+    """Get client IP address from request."""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 @login_required
 def get_qr_data(request, entry_id):
@@ -267,33 +282,6 @@ def get_qr_data(request, entry_id):
             'success': False,
             'message': 'QR code not found'
         })
-
-
-@user_passes_test(is_staff_member)
-def bulk_scan_interface(request):
-    """Staff interface for bulk QR code scanning."""
-    recent_scans = QRScan.objects.select_related(
-        'qr_code__storage_entry__student__user'
-    ).order_by('-scanned_at')[:20]
-    
-    active_entries_count = StorageEntry.objects.filter(status='active').count()
-    
-    context = {
-        'recent_scans': recent_scans,
-        'active_entries_count': active_entries_count,
-    }
-    
-    return render(request, 'qr_codes/bulk_scan.html', context)
-
-
-def get_client_ip(request):
-    """Get client IP address from request."""
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
 
 
 @method_decorator(csrf_exempt, name='dispatch')

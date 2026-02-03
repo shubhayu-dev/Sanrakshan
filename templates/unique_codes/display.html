@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+
+{% block title %}Unique Code - {{ storage_entry.student.roll_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .qr-container {
+        background: white;
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .unique-code-display {
+        font-family: 'Courier New', monospace;
+        font-size: 3.5rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        color: #333;
+        background: #f0f0f0;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        border: 2px dashed #ccc;
+        margin: 1.5rem 0;
+        display: inline-block;
+    }
+
+    .student-info {
+        background: linear-gradient(135deg, var(--primary-color), #3a6db0);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+
+    .items-list {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    .item-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        margin: 0.125rem;
+        background: var(--accent-color);
+        color: white;
+        border-radius: 15px;
+        font-size: 0.875rem;
+    }
+
+    @media print {
+
+        .navbar,
+        .footer,
+        .no-print {
+            display: none !important;
+        }
+
+        body {
+            background: white !important;
+        }
+
+        .qr-container {
+            box-shadow: none;
+            border: 2px solid #000;
+            page-break-inside: avoid;
+        }
+
+        .student-info {
+            background: #000 !important;
+            color: white !important;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .unique-code-display {
+            border: 2px solid #000;
+            background: #fff;
+        }
+    }
+
+    .print-instructions {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 4px;
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+    }
+
+    .status-active {
+        background: #28a745;
+        color: white;
+    }
+
+    .status-claimed {
+        background: #6c757d;
+        color: white;
+    }
+
+    .opacity-50 {
+        opacity: 0.5;
+        filter: grayscale(50%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+                <div>
+                    <h2><i class="bi bi-upc-scan"></i> Unique Code</h2>
+                    <p class="text-muted mb-0">Storage Entry for {{ storage_entry.student.user.get_full_name }}</p>
+                </div>
+                <div>
+                    <span class="status-badge status-{{ storage_entry.status }}">
+                        {{ storage_entry.get_status_display }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Student Information -->
+            <div class="student-info">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4><i class="bi bi-person-circle"></i> {{ storage_entry.student.user.get_full_name }}</h4>
+                        <p class="mb-2"><strong>Roll Number:</strong> {{ storage_entry.student.roll_number }}</p>
+                        <p class="mb-2"><strong>Department:</strong> {{ storage_entry.student.get_department_display }}
+                        </p>
+                        <p class="mb-0"><strong>Year:</strong> {{ storage_entry.student.year }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Phone:</strong> {{ storage_entry.student.phone_number|default:"Not
+                            provided" }}</p>
+                        <p class="mb-2"><strong>Storage Date:</strong> {{ storage_entry.created_at|date:"M d, Y g:i A"
+                            }}</p>
+                        <p class="mb-0"><strong>Total Items:</strong> {{ storage_entry.get_total_items }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unique Code -->
+            <div class="qr-container">
+                {% if storage_entry.status == 'claimed' %}
+                <div class="alert alert-danger mb-4">
+                    <i class="bi bi-x-circle-fill"></i>
+                    <strong>CODE DEACTIVATED</strong>
+                    <br>Items were claimed by: <strong>{{ storage_entry.claimed_by.get_full_name|default:"Staff"
+                        }}</strong>
+                    <br>Claimed on: <strong>{{ storage_entry.claimed_at|date:"M d, Y g:i A" }}</strong>
+                    <br><small class="text-muted">This code is no longer valid for item retrieval.</small>
+                </div>
+
+                <h3 class="mb-3 text-muted">
+                    <i class="bi bi-shield-lock"></i>
+                    Unique Code (CLAIMED)
+                </h3>
+                {% else %}
+                <h3 class="mb-3">
+                    <i class="bi bi-shield-check"></i>
+                    Your Secret Unique Code
+                </h3>
+                <p class="text-muted small">Show this code to the staff member to retrieve your items.</p>
+                {% endif %}
+
+                {% if unique_code %}
+                <div class="unique-code-display {% if storage_entry.status == 'claimed' %}opacity-50{% endif %}">
+                    {{ unique_code }}
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Generating code... Please refresh.
+                </div>
+                {% endif %}
+
+                <div class="mt-4">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <small class="text-muted d-block">Entry ID</small>
+                            <code class="small">{{ storage_entry.entry_id }}</code>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted d-block">Generated</small>
+                            <small>{{ storage_entry.created_at|date:"M d, Y" }}</small>
+                            <br><small>{{ storage_entry.created_at|date:"g:i A" }}</small>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted d-block">Status</small>
+                            {% if storage_entry.status == 'claimed' %}
+                            <span class="badge bg-danger">DEACTIVATED</span>
+                            {% elif unique_code %}
+                            <span class="badge bg-success">ACTIVE</span>
+                            {% else %}
+                            <span class="badge bg-warning">INACTIVE</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-4 no-print">
+                    {% if storage_entry.status == 'active' %}
+                    <button onclick="window.print()" class="btn btn-primary me-2">
+                        <i class="bi bi-printer"></i> Print Code
+                    </button>
+                    <a href="{% url 'unique_codes:generate' storage_entry.entry_id %}"
+                        class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-arrow-clockwise"></i> Regenerate
+                    </a>
+                    {% else %}
+                    <button onclick="window.print()" class="btn btn-secondary me-2" disabled>
+                        <i class="bi bi-printer"></i> Print Code (Deactivated)
+                    </button>
+                    {% endif %}
+                    <a href="{% url 'storage:dashboard' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- Print Instructions -->
+            <div class="print-instructions no-print">
+                <h6><i class="bi bi-info-circle"></i> Instructions</h6>
+                <ul class="mb-0 small">
+                    <li>This Unique Code is your digital token for item retrieval.</li>
+                    <li>Keep it safe and do not share it with others.</li>
+                    <li>Staff will verify this code before returning your items.</li>
+                </ul>
+            </div>
+
+            <!-- Items List -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul"></i>
+                        Stored Items ({{ items|length }} types)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if items %}
+                    <div class="items-list">
+                        {% for item in items %}
+                        <span class="item-badge">
+                            {{ item.item_name }}
+                            {% if item.quantity > 1 %}(x{{ item.quantity }}){% endif %}
+                        </span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="table-responsive mt-3">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>Quantity</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td><strong>{{ item.item_name }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ item.get_category_display }}</span>
+                                    </td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.description|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No items listed.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            {% if storage_entry.description %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-chat-left-text"></i> Additional Notes</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ storage_entry.description }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Storage Location (for staff) -->
+            {% if user.is_staff and storage_entry.storage_location %}
+            <div class="card mt-4 border-warning">
+                <div class="card-header bg-warning">
+                    <h6 class="mb-0"><i class="bi bi-geo-alt"></i> Storage Location (Staff Only)</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0"><strong>{{ storage_entry.storage_location }}</strong></p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // Print mode detection
+        if (window.location.search.includes('print=true')) {
+            window.print();
+        }
+
+    });
+</script>
+{% endblock %}
