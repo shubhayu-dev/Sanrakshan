@@ -8,39 +8,39 @@
         background: white;
         border-radius: 12px;
         padding: 1.5rem;
-        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
         transition: transform 0.2s, box-shadow 0.2s;
         border-left: 4px solid transparent;
     }
-    
+
     .stat-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 25px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
     }
-    
+
     .stat-card.primary {
         border-left-color: var(--primary-color);
     }
-    
+
     .stat-card.success {
         border-left-color: var(--accent-color);
     }
-    
+
     .stat-card.warning {
         border-left-color: var(--warning-color);
     }
-    
+
     .stat-card.info {
         border-left-color: #17a2b8;
     }
-    
+
     .stat-number {
         font-size: 2.5rem;
         font-weight: 700;
         color: var(--primary-color);
         margin-bottom: 0.25rem;
     }
-    
+
     .stat-label {
         color: #6c757d;
         font-weight: 500;
@@ -48,7 +48,7 @@
         font-size: 0.875rem;
         letter-spacing: 0.5px;
     }
-    
+
     .quick-action {
         background: white;
         border: 2px dashed #e9ecef;
@@ -60,7 +60,7 @@
         color: inherit;
         display: block;
     }
-    
+
     .quick-action:hover {
         border-color: var(--primary-color);
         background: linear-gradient(135deg, #f8f9ff, #ffffff);
@@ -68,24 +68,24 @@
         text-decoration: none;
         transform: translateY(-2px);
     }
-    
+
     .quick-action i {
         font-size: 3rem;
         margin-bottom: 1rem;
         opacity: 0.7;
     }
-    
+
     .quick-action:hover i {
         opacity: 1;
     }
-    
+
     .timeline-item {
         border-left: 2px solid #e9ecef;
         padding-left: 1rem;
         margin-bottom: 1rem;
         position: relative;
     }
-    
+
     .timeline-item::before {
         content: '';
         position: absolute;
@@ -96,29 +96,29 @@
         border-radius: 50%;
         background: var(--primary-color);
     }
-    
+
     .timeline-item.claimed::before {
         background: var(--accent-color);
     }
-    
+
     .timeline-item.cancelled::before {
         background: var(--danger-color);
     }
-    
+
     .storage-card {
         background: white;
         border-radius: 10px;
         padding: 1.25rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         margin-bottom: 1rem;
         border: 1px solid #e9ecef;
     }
-    
+
     .storage-card:hover {
         border-color: var(--primary-color);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
-    
+
     .status-badge {
         padding: 0.5rem 1rem;
         border-radius: 20px;
@@ -127,19 +127,19 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    
+
     .status-active {
         background: #fef3cd;
         color: #856404;
         border: 1px solid #ffeaa7;
     }
-    
+
     .status-claimed {
         background: #d1e7dd;
         color: #0a3622;
         border: 1px solid #86cfda;
     }
-    
+
     .welcome-banner {
         background: linear-gradient(135deg, var(--primary-color), #3a6db0);
         color: white;
@@ -147,19 +147,19 @@
         padding: 2rem;
         margin-bottom: 2rem;
     }
-    
+
     .empty-state {
         text-align: center;
         padding: 3rem 1rem;
         color: #6c757d;
     }
-    
+
     .empty-state i {
         font-size: 4rem;
         margin-bottom: 1rem;
         opacity: 0.5;
     }
-    
+
     .item-count {
         background: var(--accent-color);
         color: white;
@@ -168,15 +168,15 @@
         border-radius: 10px;
         font-weight: 600;
     }
-    
+
     .dashboard-section {
         background: white;
         border-radius: 12px;
         padding: 1.5rem;
         margin-bottom: 2rem;
-        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
     }
-    
+
     .section-title {
         color: var(--primary-color);
         font-weight: 600;
@@ -199,9 +199,9 @@
                 </h1>
                 <p class="mb-0 opacity-90">
                     {% if profile %}
-                        {{ profile.roll_number }} • {{ profile.get_department_display }} • Year {{ profile.year }}
+                    {{ profile.roll_number }} • {{ profile.get_department_display }} • Year {{ profile.year }}
                     {% else %}
-                        {{ user.email }}
+                    {{ user.email }}
                     {% endif %}
                 </p>
             </div>
@@ -277,7 +277,7 @@
                     Active Storage
                     <span class="badge bg-warning ms-2">{{ active_storage|length }}</span>
                 </h3>
-                
+
                 {% for entry in active_storage %}
                 <div class="storage-card">
                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -286,25 +286,27 @@
                                 <i class="bi bi-calendar3"></i>
                                 {{ entry.created_at|date:"M d, Y" }}
                             </h6>
-                            <small class="text-muted">{{ entry.days_in_storage }} day{{ entry.days_in_storage|pluralize }} in storage</small>
+                            <small class="text-muted">{{ entry.days_in_storage }} day{{ entry.days_in_storage|pluralize
+                                }} in storage</small>
                         </div>
                         <span class="status-badge status-active">Active</span>
                     </div>
-                    
+
                     <div class="mb-2">
-                        <span class="item-count">{{ entry.get_total_items }} item{{ entry.get_total_items|pluralize }}</span>
+                        <span class="item-count">{{ entry.get_total_items }} item{{ entry.get_total_items|pluralize
+                            }}</span>
                         <span class="ms-2 small text-muted">
                             {{ entry.get_unique_items }} unique type{{ entry.get_unique_items|pluralize }}
                         </span>
                     </div>
-                    
+
                     {% if entry.description %}
                     <p class="text-muted small mb-2">{{ entry.description|truncatewords:15 }}</p>
                     {% endif %}
-                    
+
                     <div class="d-flex gap-2">
-                        <a href="{% url 'qr_codes:display' entry.entry_id %}" class="btn btn-primary btn-sm">
-                            <i class="bi bi-qr-code"></i> View QR Code
+                        <a href="{% url 'unique_codes:display' entry.entry_id %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-qr-code"></i> View Unique Code
                         </a>
                         <a href="{% url 'storage:claim_stuff' %}" class="btn btn-outline-success btn-sm">
                             <i class="bi bi-box-arrow-down"></i> Claim Items
@@ -353,42 +355,43 @@
                     <i class="bi bi-clock-history"></i>
                     Recent Activity
                 </h4>
-                
+
                 {% if recent_entries %}
-                    <div class="timeline">
-                        {% for entry in recent_entries %}
-                        <div class="timeline-item {{ entry.status }}">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <strong class="d-block">
-                                        {% if entry.status == 'active' %}
-                                            <i class="bi bi-box-seam text-warning"></i> Items Stored
-                                        {% elif entry.status == 'claimed' %}
-                                            <i class="bi bi-check-circle text-success"></i> Items Claimed
-                                        {% elif entry.status == 'cancelled' %}
-                                            <i class="bi bi-x-circle text-danger"></i> Storage Cancelled
-                                        {% endif %}
-                                    </strong>
-                                    <small class="text-muted">
-                                        {{ entry.get_total_items }} item{{ entry.get_total_items|pluralize }}
-                                        • {{ entry.created_at|timesince }} ago
-                                    </small>
-                                </div>
-                                {% if entry.status == 'active' %}
-                                <a href="{% url 'qr_codes:display' entry.entry_id %}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-qr-code"></i>
-                                </a>
-                                {% endif %}
+                <div class="timeline">
+                    {% for entry in recent_entries %}
+                    <div class="timeline-item {{ entry.status }}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong class="d-block">
+                                    {% if entry.status == 'active' %}
+                                    <i class="bi bi-box-seam text-warning"></i> Items Stored
+                                    {% elif entry.status == 'claimed' %}
+                                    <i class="bi bi-check-circle text-success"></i> Items Claimed
+                                    {% elif entry.status == 'cancelled' %}
+                                    <i class="bi bi-x-circle text-danger"></i> Storage Cancelled
+                                    {% endif %}
+                                </strong>
+                                <small class="text-muted">
+                                    {{ entry.get_total_items }} item{{ entry.get_total_items|pluralize }}
+                                    • {{ entry.created_at|timesince }} ago
+                                </small>
                             </div>
+                            {% if entry.status == 'active' %}
+                            <a href="{% url 'unique_codes:display' entry.entry_id %}"
+                                class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-qr-code"></i>
+                            </a>
+                            {% endif %}
                         </div>
-                        {% endfor %}
                     </div>
+                    {% endfor %}
+                </div>
                 {% else %}
-                    <div class="empty-state">
-                        <i class="bi bi-inbox"></i>
-                        <p class="mb-0">No activity yet</p>
-                        <small class="text-muted">Start by storing some items!</small>
-                    </div>
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <p class="mb-0">No activity yet</p>
+                    <small class="text-muted">Start by storing some items!</small>
+                </div>
                 {% endif %}
             </div>
 
@@ -416,10 +419,12 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="empty-state" style="min-height: 300px; display: flex; align-items: center; flex-direction: column; justify-content: center;">
+            <div class="empty-state"
+                style="min-height: 300px; display: flex; align-items: center; flex-direction: column; justify-content: center;">
                 <i class="bi bi-box-seam"></i>
                 <h4>Welcome to Storage System!</h4>
-                <p class="text-muted">You haven't stored any items yet. Get started by adding your first storage entry.</p>
+                <p class="text-muted">You haven't stored any items yet. Get started by adding your first storage entry.
+                </p>
                 <a href="{% url 'storage:keep_stuff' %}" class="btn btn-primary btn-lg">
                     <i class="bi bi-plus-circle"></i> Store Your First Items
                 </a>

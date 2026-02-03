@@ -3,7 +3,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from .models import StorageEntry, StoredItem
-from qr_codes.models import QRCodeImage  
+from unique_codes.models import QRCodeImage  
 
 @receiver(pre_save, sender=StorageEntry)
 def update_storage_status(sender, instance, **kwargs):

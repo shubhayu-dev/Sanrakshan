@@ -85,7 +85,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="scans",
-                        to="qr_codes.qrcodeimage",
+                        to="unique_codes.qrcodeimage",
                     ),
                 ),
                 (

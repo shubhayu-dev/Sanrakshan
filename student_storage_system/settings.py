@@ -40,7 +40,7 @@ DJANGO_APPS = [
 LOCAL_APPS = [
     'accounts.apps.AccountsConfig',
     'storage.apps.StorageConfig', 
-    'qr_codes.apps.QrCodesConfig',
+    'unique_codes.apps.UniqueCodesConfig',
 ]
 
 THIRD_PARTY_APPS = [

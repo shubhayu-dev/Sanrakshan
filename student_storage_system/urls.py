@@ -17,7 +17,7 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/accounts/login/', permanent=False)),  # Redirect root to login
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('storage/', include('storage.urls', namespace='storage')),
-    path('qr/', include('qr_codes.urls', namespace='qr_codes')),
+    path('unique-code/', include('unique_codes.urls', namespace='unique_codes')),
 ]
 
 # Development: Serve media and static files

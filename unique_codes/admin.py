@@ -61,13 +61,13 @@ class QRCodeImageAdmin(admin.ModelAdmin):
     get_student_info.short_description = 'Student'
     
     def get_qr_preview(self, obj):
-        """Display small QR code preview."""
-        if obj.image:
+        """Display small Code preview."""
+        if obj.code:
             return format_html(
-                '<img src="{}" width="50" height="50" style="border-radius: 4px;">',
-                obj.image.url
+                '<span style="font-family: monospace; font-weight: bold;">{}</span>',
+                obj.code
             )
-        return "No image"
+        return "No code"
     get_qr_preview.short_description = 'QR Code'
     
     def get_scan_count(self, obj):
@@ -93,13 +93,15 @@ class QRCodeImageAdmin(admin.ModelAdmin):
     get_storage_status.short_description = 'Status'
     
     def get_qr_preview_large(self, obj):
-        """Display large QR code preview."""
-        if obj.image:
+        """Display large Unique Code preview."""
+        if obj.code:
             return format_html(
-                '<div style="text-align: center;"><img src="{}" style="max-width: 300px; border-radius: 8px;"></div>',
-                obj.image.url
+                '<div style="text-align: center; background: #f8f9fa; padding: 20px; border-radius: 8px;">'
+                '<div style="font-family: monospace; font-size: 24px; font-weight: bold; letter-spacing: 2px;">{}</div>'
+                '</div>',
+                obj.code
             )
-        return "No QR code generated"
+        return "No code generated"
     get_qr_preview_large.short_description = 'QR Preview'
     
     def get_storage_details(self, obj):
