@@ -6,10 +6,11 @@ Perfect for hostels, libraries, and campus facilities managing student belonging
 
 ## ✨ Key Features
 
+- **Unique Code System** for secure, specialized item retrieval (Validation Codes)
+- **Staff Dashboard** for processing claims and verification
+- **Secure Verification** via admin interface
 - **Student Registration & Authentication** with college email validation
 - **Item Storage Management** with detailed tracking
-- **QR Code Generation** for secure item retrieval
-- **Staff Interface** for processing claims seamlessly
 - **Password Reset** via email verification
 - **Responsive Design** with Bootstrap 5
 - **Privacy-Focused** with proper data protection
@@ -51,7 +52,9 @@ python manage.py runserver
 ```
 
 ### 5. Access the System
-- **Student Interface**: http://127.0.0.1:8000/
+### 5. Access the System
+- **Student Interface**: http://127.0.0.1:8000/storage/dashboard/
+- **Staff Dashboard**: http://127.0.0.1:8000/storage/staff/dashboard/
 - **Admin Interface**: http://127.0.0.1:8000/admin/
 
 ## ⚙️ Configuration
@@ -93,28 +96,19 @@ TIME_ZONE=Asia/Kolkata
 <img width="1905" height="972" alt="Screenshot from 2026-01-21 20-55-15" src="https://github.com/user-attachments/assets/bdfea773-a010-428b-a022-60dede10ed8c" />
 
 
-**QR Code page**
-- The qr code is generated
-- The qr code is to be printed and pasted on the items this helps in keeping records and confusion on finding or recognizing stuff that are kept
-  
-  <img width="1905" height="972" alt="Screenshot from 2026-01-21 20-54-35" src="https://github.com/user-attachments/assets/7b399659-d5d0-42dc-a168-fc852cafbc9c" />
-  
-  -The description is stored in QR code
-  
- <img width="950" height="967" alt="image" src="https://github.com/user-attachments/assets/0afa1f99-41b0-4c01-97b6-fbd98e6b1046" />
+**Staff Dashboard**
+- Central hub for verification and claims
+- Live statistics and recent activity feed
+- Manual code verification input
 
+*(Screenshot placeholder for Staff Dashboard)*
 
- **Dashboard after storing items**
- 
+**Unique Code Display**
+- Shows secure 8-character code
+- Status indicators (Active/Claimed/Inactive)
+- Printer-friendly format
+
 <img width="1905" height="972" alt="Screenshot from 2026-01-21 20-54-48" src="https://github.com/user-attachments/assets/b7b26573-eb39-41e4-9e4c-5173ffd304db" />
-
-
-**Claim items view**
-
--Here is the option to claim the items after which the items are marked as claimed
-
-<img width="1905" height="972" alt="Screenshot from 2026-01-21 20-54-55" src="https://github.com/user-attachments/assets/a4ea4256-94f0-4229-9165-48f03e33d72e" />
-
 
 **Dashboard after claiming items**
 
@@ -137,14 +131,15 @@ TIME_ZONE=Asia/Kolkata
 1. **Register** with college email and roll number
 2. **Login** with username/email and password
 3. **Create Storage Entry** with item details
-4. **Generate QR Code** for item retrieval
+4. **Get Unique Code**: A secure 8-character code (e.g., `A7B2-9XY1`) is generated.
 5. **View History** of all storage activities
 
 ### For Staff
-1. **Login** with staff credentials
-2. **Scan QR Codes** to view student items
-3. **Process Claims** when students collect items
-4. **Manage Storage** through admin interface
+1. **Login** with staff credentials (or admin)
+2. **Access Staff Dashboard**: `/storage/staff/dashboard/`
+3. **Verify Codes**: Enter student's unique code to view items and owner details.
+4. **Process Claims**: Mark items as returned with a single click.
+5. **Manage Storage** through admin interface as needed.
 
 ## 🗄️ Database Schema
 
@@ -153,7 +148,7 @@ TIME_ZONE=Asia/Kolkata
 - **StudentProfile**: College-specific student data
 - **StorageEntry**: Individual storage sessions
 - **StoredItem**: Items within each storage entry
-- **QRCodeImage**: Generated QR codes for entries
+- **UniqueCode**: Generated unique validation codes
 - **PasswordResetCode**: Email-based password reset
 
 ## 🔒 Security Features

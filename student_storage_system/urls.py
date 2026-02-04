@@ -9,12 +9,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
 
+from accounts.views import LandingView
+
 urlpatterns = [
     # Admin interface
     path('admin/', admin.site.urls),
     
     # App URLs with namespacing
-    path('', RedirectView.as_view(url='/accounts/login/', permanent=False)),  # Redirect root to login
+    path('', LandingView.as_view(), name='landing'),  # Root URL
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('storage/', include('storage.urls', namespace='storage')),
     path('unique-code/', include('unique_codes.urls', namespace='unique_codes')),

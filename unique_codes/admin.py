@@ -19,15 +19,15 @@ from django.shortcuts import redirect
 from django.contrib import messages
 import csv
 
-from .models import QRCodeImage, QRScan
+from .models import UniqueCode, UniqueCodeScan
 
 
-@admin.register(QRCodeImage)
-class QRCodeImageAdmin(admin.ModelAdmin):
-    """Professional QR code image management."""
+@admin.register(UniqueCode)
+class UniqueCodeAdmin(admin.ModelAdmin):
+    """Professional Unique Code management."""
     
     list_display = [
-        'get_student_info', 'get_qr_preview', 'is_active', 
+        'get_student_info', 'get_code_preview', 'is_active', 
         'generated_at', 'get_scan_count', 'get_storage_status'
     ]
     
@@ -40,14 +40,15 @@ class QRCodeImageAdmin(admin.ModelAdmin):
         'storage_entry__student__user__first_name',
         'storage_entry__student__user__last_name',
         'uuid',
+        'code',
     ]
     
     readonly_fields = [
-        'uuid', 'generated_at', 'get_qr_preview_large', 
+        'uuid', 'generated_at', 'get_code_preview_large', 
         'get_storage_details', 'get_scan_summary', 'content_data'
     ]
     
-    actions = ['regenerate_qr_codes', 'activate_qr_codes', 'deactivate_qr_codes']
+    actions = ['regenerate_codes']
     
     def get_student_info(self, obj):
         """Display student information."""
@@ -60,7 +61,7 @@ class QRCodeImageAdmin(admin.ModelAdmin):
         )
     get_student_info.short_description = 'Student'
     
-    def get_qr_preview(self, obj):
+    def get_code_preview(self, obj):
         """Display small Code preview."""
         if obj.code:
             return format_html(
@@ -68,7 +69,7 @@ class QRCodeImageAdmin(admin.ModelAdmin):
                 obj.code
             )
         return "No code"
-    get_qr_preview.short_description = 'QR Code'
+    get_code_preview.short_description = 'Code'
     
     def get_scan_count(self, obj):
         """Display scan count."""
@@ -92,7 +93,7 @@ class QRCodeImageAdmin(admin.ModelAdmin):
         )
     get_storage_status.short_description = 'Status'
     
-    def get_qr_preview_large(self, obj):
+    def get_code_preview_large(self, obj):
         """Display large Unique Code preview."""
         if obj.code:
             return format_html(
@@ -102,7 +103,7 @@ class QRCodeImageAdmin(admin.ModelAdmin):
                 obj.code
             )
         return "No code generated"
-    get_qr_preview_large.short_description = 'QR Preview'
+    get_code_preview_large.short_description = 'Preview'
     
     def get_storage_details(self, obj):
         """Display storage information."""
@@ -129,25 +130,25 @@ class QRCodeImageAdmin(admin.ModelAdmin):
         )
     get_scan_summary.short_description = 'Scan History'
     
-    def regenerate_qr_codes(self, request, queryset):
-        """Bulk regenerate QR codes."""
+    def regenerate_codes(self, request, queryset):
+        """Bulk regenerate Unique codes."""
         count = 0
-        for qr_code in queryset:
+        for code_obj in queryset:
             try:
-                qr_code.generate_qr_image(regenerate=True)
+                code_obj.generate_code_string(regenerate=True)
                 count += 1
             except Exception as e:
-                messages.error(request, f'Failed to regenerate QR: {str(e)}')
-        messages.success(request, f'Regenerated {count} QR codes.')
-    regenerate_qr_codes.short_description = "Regenerate QR codes"
+                messages.error(request, f'Failed to regenerate: {str(e)}')
+        messages.success(request, f'Regenerated {count} codes.')
+    regenerate_codes.short_description = "Regenerate Codes"
 
 
-@admin.register(QRScan)
-class QRScanAdmin(admin.ModelAdmin):
-    """QR scan tracking."""
+@admin.register(UniqueCodeScan)
+class UniqueCodeScanAdmin(admin.ModelAdmin):
+    """Scan tracking."""
     
     list_display = [
-        'get_qr_info', 'scanned_by', 'scanned_at', 
+        'get_code_info', 'scanned_by', 'scanned_at', 
         'action_taken', 'is_valid', 'ip_address'
     ]
     
@@ -156,7 +157,7 @@ class QRScanAdmin(admin.ModelAdmin):
     ]
     
     search_fields = [
-        'qr_code__storage_entry__student__roll_number',
+        'unique_code__storage_entry__student__roll_number',
         'scanned_by__username',
         'ip_address'
     ]
@@ -164,12 +165,12 @@ class QRScanAdmin(admin.ModelAdmin):
     date_hierarchy = 'scanned_at'
     ordering = ['-scanned_at']
     
-    def get_qr_info(self, obj):
-        """Display QR info."""
-        student = obj.qr_code.storage_entry.student
+    def get_code_info(self, obj):
+        """Display Code info."""
+        student = obj.unique_code.storage_entry.student
         return format_html(
             '{} ({})',
             student.user.get_full_name(),
             student.roll_number
         )
-    get_qr_info.short_description = 'Student'
+    get_code_info.short_description = 'Student'

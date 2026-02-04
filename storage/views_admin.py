@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import Count, Q
 from django.utils import timezone
 from .models import StorageEntry
-from unique_codes.models import QRScan
+from unique_codes.models import UniqueCodeScan
 import datetime
 
 class StaffDashboardView(UserPassesTestMixin, TemplateView):
@@ -35,8 +35,8 @@ class StaffDashboardView(UserPassesTestMixin, TemplateView):
         ).order_by('-updated_at')[:10]
         
         # Recent Scans/Verifications
-        context['recent_scans'] = QRScan.objects.select_related(
-            'qr_code__storage_entry__student__user',
+        context['recent_scans'] = UniqueCodeScan.objects.select_related(
+            'unique_code__storage_entry__student__user',
             'scanned_by'
         ).order_by('-scanned_at')[:10]
         

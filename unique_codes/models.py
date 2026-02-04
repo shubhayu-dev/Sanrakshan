@@ -10,12 +10,10 @@ import uuid
 
 User = get_user_model()
 
-class QRCodeImage(models.Model):
+class UniqueCode(models.Model):
     """
     Model to store and manage Unique Codes for storage entries.
-    Renamed conceptually to UniqueCode but keeping model name for DB compatibility if needed, 
-    or we can rename it. For now, we'll keep the class name but change functionality 
-    to be a 'Unique Code' manager.
+    Replaces the old QR Code image system.
     """
     
     # Use a UUID to avoid predictable URLs
@@ -29,10 +27,10 @@ class QRCodeImage(models.Model):
     storage_entry = models.OneToOneField(
         'storage.StorageEntry',
         on_delete=models.CASCADE,
-        related_name='qr_code'
+        related_name='unique_code'
     )
     
-    # THE UNIQUE CODE (Replacement for Image)
+    # THE UNIQUE CODE
     code = models.CharField(
         max_length=20,
         unique=True,
@@ -81,14 +79,13 @@ class QRCodeImage(models.Model):
             code = ''.join(random.choices(chars, k=length))
             # Format as XXXX-XXXX
             formatted_code = f"{code[:4]}-{code[4:]}"
-            if not QRCodeImage.objects.filter(code=formatted_code).exists():
+            if not UniqueCode.objects.filter(code=formatted_code).exists():
                 return formatted_code
 
-    def generate_qr_image(self, regenerate=False):
+    def generate_code_string(self, regenerate=False):
         """
-        Refactored to generate Unique Code string instead of Image.
-        Kept name 'generate_qr_image' for compatibility with existing calls,
-        but it now primarily ensures a 'code' exists.
+        Generate Unique Code string.
+        Renamed from generate_qr_image to be more accurate.
         """
         if self.code and not regenerate:
             return self.code
@@ -100,11 +97,11 @@ class QRCodeImage(models.Model):
         return self.code
 
 
-class QRScan(models.Model):
+class UniqueCodeScan(models.Model):
     """Tracking of Code validations/scans."""
     
-    qr_code = models.ForeignKey(
-        QRCodeImage,
+    unique_code = models.ForeignKey(
+        UniqueCode,
         on_delete=models.CASCADE,
         related_name='scans'
     )
@@ -115,7 +112,7 @@ class QRScan(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='qr_scans'
+        related_name='code_scans'
     )
     
     # When and where
@@ -139,21 +136,25 @@ class QRScan(models.Model):
         db_table = 'qr_codes_qrscan'
     
     def __str__(self):
-        return f"Scan: {self.qr_code.code} at {self.scanned_at}"
+        return f"Scan: {self.unique_code.code} at {self.scanned_at}"
 
 
 @receiver(post_save, sender='storage.StorageEntry')
-def create_qr_code_for_storage_entry(sender, instance, created, **kwargs):
+def create_code_for_storage_entry(sender, instance, created, **kwargs):
     """Create a Unique Code when a storage entry is created."""
     if created:
-        qr = QRCodeImage.objects.create(storage_entry=instance)
-        qr.generate_qr_image() # This now generates the alphanumeric code
+        code_obj = UniqueCode.objects.create(storage_entry=instance)
+        code_obj.generate_code_string()
     else:
         # Update if needed
         try:
-            qr_code = instance.qr_code
-            if not qr_code.code:
-                qr_code.generate_qr_image()
-        except QRCodeImage.DoesNotExist:
-            qr = QRCodeImage.objects.create(storage_entry=instance)
-            qr.generate_qr_image()
+            # We reference the related name on StorageEntry, which we need to update in StorageEntry
+            # But here we are effectively checking if it exists.
+            # The related_name in UniqueCode definitions is 'unique_code'.
+            # Previously it was 'qr_code'.
+            code_obj = instance.unique_code
+            if not code_obj.code:
+                code_obj.generate_code_string()
+        except UniqueCode.DoesNotExist:
+            code_obj = UniqueCode.objects.create(storage_entry=instance)
+            code_obj.generate_code_string()

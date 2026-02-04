@@ -40,7 +40,7 @@ def dashboard(request):
     - Status overview
     """
     try:
-        profile = get_object_or_404(StudentProfile, user=request.user)
+        profile = StudentProfile.objects.get(user=request.user)
     except StudentProfile.DoesNotExist:
         messages.error(request, "Student profile not found. Please contact admin.")
         return redirect('accounts:profile')

@@ -15,7 +15,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.views.generic import CreateView, UpdateView, DetailView
+from django.views.generic import CreateView, UpdateView, DetailView, TemplateView
 from django.urls import reverse_lazy, reverse
 from django.db import transaction
 from django.core.exceptions import ValidationError
@@ -31,6 +31,24 @@ from .forms import (
 from storage.models import StorageEntry
 from django.core.mail import send_mail
 from django.conf import settings
+
+
+class LandingView(TemplateView):
+    """
+    Landing page with dual login options and auto-redirect.
+    """
+    template_name = 'landing.html'
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            if request.user.is_staff:
+                return redirect('storage:staff_dashboard')
+            elif hasattr(request.user, 'student_profile'):
+                return redirect('storage:dashboard')
+            else:
+                return redirect('accounts:profile')
+        return super().get(request, *args, **kwargs)
+
 
 
 class CustomLoginView(LoginView):
@@ -52,6 +70,10 @@ class CustomLoginView(LoginView):
         next_url = self.request.GET.get('next')
         if next_url:
             return next_url
+            
+        user = self.request.user
+        if user.is_staff:
+            return reverse('storage:staff_dashboard')
         return reverse('storage:dashboard')
     
     def form_valid(self, form):
@@ -197,7 +219,7 @@ class RegisterView(CreateView):
         return self.render_to_response(context)
 
 
-class ProfileView(LoginRequiredMixin, DetailView):
+class ProfileView(LoginRequiredMixin, TemplateView):
     """
     Display user profile with student information.
     
@@ -206,30 +228,42 @@ class ProfileView(LoginRequiredMixin, DetailView):
     - Storage statistics
     - Recent activity summary
     """
-    model = StudentProfile
     template_name = 'accounts/profile.html'
-    context_object_name = 'profile'
-    
-    def get_object(self):
-        """Get current user's student profile."""
-        return get_object_or_404(StudentProfile, user=self.request.user)
     
     def get_context_data(self, **kwargs):
         """Add storage statistics to context."""
         context = super().get_context_data(**kwargs)
-        profile = self.get_object()
         
-        # Calculate storage statistics
-        storage_entries = profile.storage_entries.all()
-        context.update({
-            'total_storage_sessions': storage_entries.count(),
-            'active_storage_sessions': storage_entries.filter(status='active').count(),
-            'claimed_sessions': storage_entries.filter(status='claimed').count(),
-            'total_items_stored': sum(entry.get_total_items() for entry in storage_entries),
-            'recent_sessions': storage_entries.order_by('-created_at')[:5],  # Last 5 entries with proper ordering
-        })
-        
+        # Check if staff
+        if self.request.user.is_staff:
+             # Ideally redirect, but we are in get_context_data. 
+             # Better to handle redirect in get/dispatch.
+             pass
+
+        try:
+            profile = StudentProfile.objects.get(user=self.request.user)
+            context['profile'] = profile
+            
+            # Calculate storage statistics
+            storage_entries = profile.storage_entries.all()
+            context.update({
+                'total_storage_sessions': storage_entries.count(),
+                'active_storage_sessions': storage_entries.filter(status='active').count(),
+                'claimed_sessions': storage_entries.filter(status='claimed').count(),
+                'total_items_stored': sum(entry.get_total_items() for entry in storage_entries),
+                'recent_sessions': storage_entries.order_by('-created_at')[:5],
+            })
+        except StudentProfile.DoesNotExist:
+            context['profile'] = None
+            
         return context
+
+    def get(self, request, *args, **kwargs):
+        # Redirect staff to their dashboard
+        if request.user.is_staff:
+            return redirect('storage:staff_dashboard')
+            
+        return super().get(request, *args, **kwargs)
 
 
 class EditProfileView(LoginRequiredMixin, UpdateView):
