@@ -127,7 +127,7 @@
                     {% for scan in recent_scans %}
                     <div class="list-group-item">
                         <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">{{ scan.qr_code.storage_entry.student.user.get_full_name }}</h6>
+                            <h6 class="mb-1">{{ scan.unique_code.storage_entry.student.user.get_full_name }}</h6>
                             <small class="text-muted">{{ scan.scanned_at|timesince }} ago</small>
                         </div>
                         <p class="mb-1">
@@ -137,7 +137,7 @@
                             {% else %}
                             <span class="badge bg-danger">Invalid</span>
                             {% endif %}
-                            Code: <code>{{ scan.qr_code.code }}</code>
+                            Code: <code>{{ scan.unique_code.code }}</code>
                         </p>
                         <small class="text-muted">By: {{ scan.scanned_by.get_full_name|default:"Unknown" }}</small>
                     </div>
@@ -249,7 +249,7 @@
             const formData = new FormData();
             formData.append('csrfmiddlewaretoken', csrfToken);
 
-            fetch(`/qr/process-claim/${entryId}/`, {
+            fetch(`{% url 'unique_codes:process_claim' entry_id='00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', entryId), {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': '{{ csrf_token }}'

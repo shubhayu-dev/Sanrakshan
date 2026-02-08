@@ -217,7 +217,7 @@ class KeepStuffView(LoginRequiredMixin, CreateView):
                     pass
                 
                 messages.success(self.request, f"Storage entry created successfully with {items_created} item(s)!")
-                return redirect('qr_codes:display', entry_id=storage_entry.entry_id)
+                return redirect('unique_codes:display', entry_id=storage_entry.entry_id)
                 
         except Exception as e:
             messages.error(self.request, f"Error creating storage entry: {str(e)}")
